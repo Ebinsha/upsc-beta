@@ -1,0 +1,59 @@
+{
+  "topics": [
+    {
+      "id": "1",
+      "name": "Environment",
+      "priority": 10,
+      "rating": 4.8,
+      "isHot": true,
+      "color": "#F5A3A3",
+      "icon": "🌱",
+      "subtopicCount": 145,
+      "difficulty": "High"
+    },
+    {
+      "id": "2",
+      "name": "History",
+      "priority": 8,
+      "rating": 4.5,
+      "isHot": false,
+      "color": "#A3C3F5",
+      "icon": "📚",
+      "subtopicCount": 120,
+      "difficulty": "Medium"
+    },
+    {
+      "id": "3",
+      "name": "Geography",
+      "priority": 7,
+      "rating": 4.3,
+      "isHot": false,
+      "color": "#7DB8E8",
+      "icon": "🌍",
+      "subtopicCount": 98,
+      "difficulty": "Medium"
+    },
+    {
+      "id": "4",
+      "name": "Economy",
+      "priority": 9,
+      "rating": 4.7,
+      "isHot": true,
+      "color": "#E67E22",
+      "icon": "💰",
+      "subtopicCount": 132,
+      "difficulty": "High"
+    },
+    {
+      "id": "5",
+      "name": "Ethics",
+      "priority": 6,
+      "rating": 4.1,
+      "isHot": false,
+      "color": "#C39BD3",
+      "icon": "⚖️",
+      "subtopicCount": 87,
+      "difficulty": "Low"
+    }
+  ]
+}
