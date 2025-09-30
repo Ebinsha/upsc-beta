@@ -111,13 +111,13 @@ export default function Study() {
                     
                     <Text className="text-lg font-bold text-slate-800 mb-auto">{topic.name}</Text>
                     
-                    <View className="gap-2 flex-row width-full justify-between">
+                    <View className="gap-2 flex-row w-full justify-between items-end">
                       <View className="flex-row items-center gap-1">
                         {renderStars(topic.rating)}
                         <Text className="text-sm font-semibold text-slate-800 ml-1">{topic.rating}</Text>
                       </View>
                       
-                      <View className="gap-0.5">
+                      <View className="gap-0.5 items-end">
                         <Text className="text-xs text-slate-600 font-medium">
                           {topic.subtopicCount} Subtopics
                         </Text>

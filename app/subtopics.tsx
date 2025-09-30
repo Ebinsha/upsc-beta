@@ -167,6 +167,18 @@ export default function Subtopics() {
 
   const subtopics = getSubtopics(topicId as string);
 
+  const getSubtopicColor = (index: number, baseColor: string) => {
+    // Generate different shades of the base color
+    const shades = [
+      baseColor, // Original color
+      `${baseColor}CC`, // 80% opacity
+      `${baseColor}B3`, // 70% opacity
+      `${baseColor}99`, // 60% opacity
+      `${baseColor}80`, // 50% opacity
+    ];
+    return shades[index % shades.length];
+  };
+
   const getCardSize = (priority: number) => {
     if (priority >= 9) return { width: width - 40, height: 140 }; // Large
     if (priority >= 7) return { width: (width - 52) / 2, height: 120 }; // Medium
@@ -236,8 +248,9 @@ export default function Subtopics() {
         <View className="flex-row flex-wrap gap-3">
           {subtopics
             .sort((a, b) => b.priority - a.priority)
-            .map((subtopic) => {
+            .map((subtopic, index) => {
               const cardSize = getCardSize(subtopic.priority);
+              const cardColor = getSubtopicColor(index, topicColor as string);
               
               return (
                 <TouchableOpacity
@@ -246,7 +259,7 @@ export default function Subtopics() {
                   style={{
                     width: cardSize.width,
                     height: cardSize.height,
-                    backgroundColor: topicColor as string,
+                    backgroundColor: cardColor,
                   }}
                   onPress={() => handleSubtopicPress(subtopic)}
                 >
@@ -262,13 +275,13 @@ export default function Subtopics() {
                     
                     <Text className="text-lg font-bold text-slate-800 mb-auto">{subtopic.name}</Text>
                     
-                    <View className="gap-2 flex-row width-full justify-between">
+                    <View className="gap-2 flex-row w-full justify-between items-end">
                       <View className="flex-row items-center gap-1">
                         {renderStars(subtopic.rating)}
                         <Text className="text-sm font-semibold text-slate-800 ml-1">{subtopic.rating}</Text>
                       </View>
                       
-                      <View className="gap-0.5">
+                      <View className="gap-0.5 items-end">
                         <Text className="text-xs text-slate-600 font-medium">
                           {subtopic.questionsCount} Questions
                         </Text>
