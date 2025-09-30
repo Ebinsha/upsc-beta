@@ -68,7 +68,7 @@ export function TopicCard({
           </View>
           
           <View className="items-end flex-shrink-0 ml-2">
-            {bottomRightText.map((text, index) => (
+            {bottomRightText && bottomRightText.map((text, index) => (
               <Text 
                 key={index}
                 className="text-xs text-slate-600 font-medium leading-tight"

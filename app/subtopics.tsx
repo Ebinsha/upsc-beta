@@ -249,6 +249,10 @@ export default function Subtopics() {
                   icon={subtopic.icon}
                   color={cardColor}
                   width={cardSize.width}
+                  height={cardSize.height}
+                  bottomLeftText=""
+                  bottomRightText={[`${subtopic.questionsCount} Questions`, subtopic.difficulty]}
+                  onPress={() => handleSubtopicPress(subtopic)}
                 />
               );
             })}

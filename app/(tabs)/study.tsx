@@ -85,6 +85,10 @@ export default function Study() {
                   icon={topic.icon}
                   color={topic.color}
                   width={cardSize.width}
+                  height={cardSize.height}
+                  bottomLeftText=""
+                  bottomRightText={[`${topic.subtopicCount} Questions`, topic.difficulty]}
+                  onPress={() => handleTopicPress(topic)}
                 />
               );
             })}
