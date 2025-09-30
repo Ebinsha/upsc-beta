@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { router } from 'expo-router';
 import { Topic } from '@/types/topic';
 import topicData from '@/constants/topic-const.json';
+import { TopicCard } from '@/components/TopicCard';
+import { StarRating } from '@/components/StarRating';
 
 const { width } = Dimensions.get('window');
 
@@ -17,21 +19,32 @@ export default function Study() {
     return { width: (width - 52) / 2, height: 100 }; // Small
   };
 
-  const handleTopicPress = (topic: Topic) => {
-    router.push({
-      pathname: '/topic-justify',
-      params: { 
-        topicId: topic.id,
-        topicName: topic.name,
-        topicColor: topic.color,
-        rating: topic.rating.toString(),
-        questionsCount: topic.subtopicCount.toString(),
-        difficulty: topic.difficulty,
-        isHot: topic.isHot.toString()
-      }
-    });
-  };
+  // const handleTopicPress = (topic: Topic) => {
+  //   router.push({
+  //     pathname: '/topic-justify',
+  //     params: { 
+  //       topicId: topic.id,
+  //       topicName: topic.name,
+  //       topicColor: topic.color,
+  //       rating: topic.rating.toString(),
+  //       questionsCount: topic.subtopicCount.toString(),
+  //       difficulty: topic.difficulty,
+  //       isHot: topic.isHot.toString()
+  //     }
+  //   });
+  // };
 
+      const handleTopicPress = (topic: Topic) => {
+        router.push({
+          pathname:'/subtopics',
+          params: { 
+            topicId: topic.id,
+            topicName: topic.name,
+            topicColor: topic.color
+          }
+        });
+      };
+  
   const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -79,45 +92,60 @@ export default function Study() {
               const cardSize = getCardSize(topic.priority);
               
               return (
-                <TouchableOpacity
-                  key={topic.id}
-                  className="rounded-2xl p-5 shadow-md"
-                  style={{
-                    width: cardSize.width,
-                    height: cardSize.height,
-                    backgroundColor: topic.color,
-                  }}
-                  onPress={() => handleTopicPress(topic)}
-                >
-                  <View className="flex-1">
-                    <View className="flex-row justify-between items-start mb-2">
-                      <Text className="text-2xl">{topic.icon}</Text>
-                      {topic.isHot && (
-                        <View className="bg-red-500 rounded-xl p-1">
-                          <Flame size={12} color="#ffffff" />
-                        </View>
-                      )}
-                    </View>
+                // <TouchableOpacity
+                //   key={topic.id}
+                //   className="rounded-2xl p-5 shadow-md"
+                //   style={{
+                //     width: cardSize.width,
+                //     height: cardSize.height,
+                //     backgroundColor: topic.color,
+                //   }}
+                //   onPress={() => handleTopicPress(topic)}
+                // >
+                //   <View className="flex-1">
+                //     <View className="flex-row justify-between items-start mb-2">
+                //       <Text className="text-2xl">{topic.icon}</Text>
+                //       {topic.isHot && (
+                //         <View className="bg-red-500 rounded-xl p-1">
+                //           <Flame size={12} color="#ffffff" />
+                //         </View>
+                //       )}
+                //     </View>
                     
-                    <Text className="text-lg font-bold text-slate-800 mb-auto">{topic.name}</Text>
+                //     <Text className="text-lg font-bold text-slate-800 mb-auto">{topic.name}</Text>
                     
-                    <View className="gap-2 flex-row width-full justify-between">
-                      <View className="flex-row items-center gap-1">
-                        {renderStars(topic.rating)}
-                        <Text className="text-sm font-semibold text-slate-800 ml-1">{topic.rating}</Text>
-                      </View>
+                //     <View className="gap-2 flex-row width-full justify-between">
+                     
+                //       <View className="flex-shrink">
+                //                   <StarRating rating={topic.rating} size={12} />
+                //                 </View>
                       
-                      <View className="gap-0.5">
-                        <Text className="text-xs text-slate-600 font-medium">
-                          {topic.subtopicCount} Subtopics
-                        </Text>
-                        <Text className="text-xs text-slate-600 font-medium">
-                          {topic.difficulty} Priority
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                </TouchableOpacity>
+                //       <View className="gap-0.5">
+                //         <Text className="text-xs text-slate-600 font-medium">
+                //           {topic.subtopicCount} Subtopics
+                //         </Text>
+                //         <Text className="text-xs text-slate-600 font-medium">
+                //           {topic.difficulty} Priority
+                //         </Text>
+                //       </View>
+                //     </View>
+                //   </View>
+                // </TouchableOpacity>
+                <TopicCard
+                  key={topic.id}
+                  id={topic.id}
+                  name={topic.name}
+                  priority={topic.priority}
+                  rating={topic.rating}
+                  isHot={topic.isHot}
+                  icon={topic.icon}
+                  color={topic.color}
+                  width={cardSize.width}
+                  height={cardSize.height}
+                  bottomLeftText=""
+                  bottomRightText={[`${topic.subtopicCount} Questions`, topic.difficulty]}
+                  onPress={() => handleTopicPress(topic)}
+                />
               );
             })}
         </View>
