@@ -2,6 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions } from 
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Search, Star, Flame } from 'lucide-react-native';
 import { useState } from 'react';
+import { TopicCard } from '@/components/TopicCard';
 
 const { width } = Dimensions.get('window');
 
@@ -200,21 +201,6 @@ export default function Subtopics() {
     });
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={i} size={14} color="#fbbf24" fill="#fbbf24" />);
-    }
-    
-    if (rating % 1 !== 0) {
-      stars.push(<Star key="half" size={14} color="#fbbf24" />);
-    }
-    
-    return stars;
-  };
-
   return (
     <View className="flex-1 bg-slate-50">
       <View className="pt-16 px-5 pb-5" style={{ backgroundColor: topicColor as string }}>
@@ -253,45 +239,17 @@ export default function Subtopics() {
               const cardColor = getSubtopicColor(index, topicColor as string);
               
               return (
-                <TouchableOpacity
+                <TopicCard
                   key={subtopic.id}
-                  className="rounded-2xl p-5 shadow-md"
-                  style={{
-                    width: cardSize.width,
-                    height: cardSize.height,
-                    backgroundColor: cardColor,
-                  }}
-                  onPress={() => handleSubtopicPress(subtopic)}
-                >
-                  <View className="flex-1">
-                    <View className="flex-row justify-between items-start mb-2">
-                      <Text className="text-2xl">{subtopic.icon}</Text>
-                      {subtopic.isHot && (
-                        <View className="bg-red-500 rounded-xl p-1">
-                          <Flame size={12} color="#ffffff" />
-                        </View>
-                      )}
-                    </View>
-                    
-                    <Text className="text-lg font-bold text-slate-800 mb-auto">{subtopic.name}</Text>
-                    
-                    <View className="gap-2 flex-row w-full justify-between items-end">
-                      <View className="flex-row items-center gap-1">
-                        {renderStars(subtopic.rating)}
-                        <Text className="text-sm font-semibold text-slate-800 ml-1">{subtopic.rating}</Text>
-                      </View>
-                      
-                      <View className="gap-0.5 items-end">
-                        <Text className="text-xs text-slate-600 font-medium">
-                          {subtopic.questionsCount} Questions
-                        </Text>
-                        <Text className="text-xs text-slate-600 font-medium">
-                          {subtopic.difficulty} Priority
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                </TouchableOpacity>
+                  id={subtopic.id}
+                  name={subtopic.name}
+                  priority={subtopic.priority}
+                  rating={subtopic.rating}
+                  isHot={subtopic.isHot}
+                  icon={subtopic.icon}
+                  color={cardColor}
+                  width={cardSize.width}
+                />
               );
             })}
         </View>
