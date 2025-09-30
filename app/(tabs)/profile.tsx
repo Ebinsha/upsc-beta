@@ -28,8 +28,8 @@ export default function Profile() {
               <User size={40} color="#64748b" />
             </View>
           </View>
-          <Text className="text-2xl font-bold text-slate-800 mb-1">John Doe</Text>
-          <Text className="text-base text-slate-500 mb-6">john.doe@example.com</Text>
+          <Text className="text-2xl font-bold text-slate-800 mb-1">Ebinsha Thaj</Text>
+          <Text className="text-base text-slate-500 mb-6">ebin@example.com</Text>
           
           <View className="flex-row w-full justify-around">
             {stats.map((stat, index) => (
