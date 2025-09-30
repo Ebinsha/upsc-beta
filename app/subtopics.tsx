@@ -201,20 +201,7 @@ export default function Subtopics() {
     });
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={i} size={14} color="#fbbf24" fill="#fbbf24" />);
-    }
-    
-    if (rating % 1 !== 0) {
-      stars.push(<Star key="half" size={14} color="#fbbf24" />);
-    }
-    
-    return stars;
-  };
+  
 
   return (
     <View className="flex-1 bg-slate-50">

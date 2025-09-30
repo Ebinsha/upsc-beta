@@ -2,9 +2,9 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions } from 
 import { Search, Settings, Star, Flame } from 'lucide-react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
+import { TopicCard } from '@/components/TopicCard';
 import { Topic } from '@/types/topic';
 import topicData from '@/constants/topic-const.json';
-import { TopicCard } from '@/components/TopicCard';
 import { StarRating } from '@/components/StarRating';
 
 const { width } = Dimensions.get('window');
@@ -92,45 +92,6 @@ export default function Study() {
               const cardSize = getCardSize(topic.priority);
               
               return (
-                // <TouchableOpacity
-                //   key={topic.id}
-                //   className="rounded-2xl p-5 shadow-md"
-                //   style={{
-                //     width: cardSize.width,
-                //     height: cardSize.height,
-                //     backgroundColor: topic.color,
-                //   }}
-                //   onPress={() => handleTopicPress(topic)}
-                // >
-                //   <View className="flex-1">
-                //     <View className="flex-row justify-between items-start mb-2">
-                //       <Text className="text-2xl">{topic.icon}</Text>
-                //       {topic.isHot && (
-                //         <View className="bg-red-500 rounded-xl p-1">
-                //           <Flame size={12} color="#ffffff" />
-                //         </View>
-                //       )}
-                //     </View>
-                    
-                //     <Text className="text-lg font-bold text-slate-800 mb-auto">{topic.name}</Text>
-                    
-                //     <View className="gap-2 flex-row width-full justify-between">
-                     
-                //       <View className="flex-shrink">
-                //                   <StarRating rating={topic.rating} size={12} />
-                //                 </View>
-                      
-                //       <View className="gap-0.5">
-                //         <Text className="text-xs text-slate-600 font-medium">
-                //           {topic.subtopicCount} Subtopics
-                //         </Text>
-                //         <Text className="text-xs text-slate-600 font-medium">
-                //           {topic.difficulty} Priority
-                //         </Text>
-                //       </View>
-                //     </View>
-                //   </View>
-                // </TouchableOpacity>
                 <TopicCard
                   key={topic.id}
                   id={topic.id}
