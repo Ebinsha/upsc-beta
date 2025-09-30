@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { router } from 'expo-router';
 import { Topic } from '@/types/topic';
 import topicData from '@/constants/topic-const.json';
-
 const { width } = Dimensions.get('window');
 
 export default function Study() {
@@ -18,6 +17,17 @@ export default function Study() {
   };
 
   const handleTopicPress = (topic: Topic) => {
+    router.push({
+      pathname: '/subtopics',
+      params: { 
+        topicId: topic.id,
+        topicName: topic.name,
+        topicColor: topic.color
+      }
+    });
+  };
+
+  const handleTopicPress_old = (topic: Topic) => {
     router.push({
       pathname: '/topic-justify',
       params: { 
