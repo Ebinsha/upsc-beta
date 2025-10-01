@@ -1,8 +1,8 @@
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Star, Clock, Target, Play, ZoomIn, Calendar } from 'lucide-react-native';
-import { LineChart } from 'react-native-chart-kit';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeft, Calendar, Clock, Play, Star, Target, ZoomIn } from 'lucide-react-native';
 import { useState } from 'react';
+import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
 
 const { width } = Dimensions.get('window');
 
@@ -81,7 +81,14 @@ export default function TopicJustify() {
     <View className="flex-1 bg-slate-50">
       <View className="pt-16 px-5 pb-6" style={{ backgroundColor: topicColor as string }}>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => {
+            try {
+              router.back();
+            } catch (error) {
+              // Fallback for when router.back() fails
+              router.replace('/');
+            }
+          }}
           className="w-10 h-10 rounded-full bg-white/90 items-center justify-center mb-4"
         >
           <ArrowLeft size={24} color="#1e293b" />
@@ -124,7 +131,7 @@ export default function TopicJustify() {
               <TouchableOpacity
                 key={range.key}
                 className={`flex-1 py-2 px-3 rounded-lg items-center ${
-                  selectedTimeRange === range.key ? 'bg-white shadow-sm' : ''
+                  selectedTimeRange === range.key ? 'bg-white' : ''
                 }`}
                 onPress={() => setSelectedTimeRange(range.key)}
               >
