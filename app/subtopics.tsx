@@ -173,12 +173,6 @@ export default function Subtopics() {
 
   const { highPriority, mediumPriority, grouped } = groupSubtopics(mockSubtopics);
 
-  const getSubtopicColor = (index: number, baseColor: string) => {
-    // Generate different shades of the base color
-    const baseHex = baseColor.replace('#', '');
-    const shades = [
-      baseColor, // Original color
-      `${baseColor}E6`, // 90% opacity
   const filteredHighPriority = highPriority.filter(subtopic =>
     subtopic.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
