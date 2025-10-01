@@ -91,7 +91,7 @@ export default function Study() {
                   width={cardSize.width}
                   height={cardSize.height}
                   bottomLeftText=""
-                  bottomRightText={[`${topic.subtopicCount} Questions`, topic.difficulty]}
+                  bottomRightText={[`${topic.subtopicCount} Subtopic`, topic.difficulty]}
                   onPress={() => handleTopicPress(topic)}
                 />
               );
