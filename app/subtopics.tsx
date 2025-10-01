@@ -102,6 +102,43 @@ export default function Subtopics() {
   const { topicId, topicName, topicColor } = params;
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Helper functions - moved before usage
+  const getSubtopicColor = (index: number, baseColor: string) => {
+    const colors = [
+      '#F5A3A3', '#A3C3F5', '#7DB8E8', '#E67E22', '#C39BD3', '#85C1E9',
+      '#F8C471', '#82E0AA', '#D7BDE2', '#F9E79F', '#AED6F1', '#A9DFBF',
+      '#F5B7B1', '#D5A6BD', '#A3E4D7', '#F4D03F', '#85C1E9', '#D2B4DE'
+    ];
+    return colors[index % colors.length];
+  };
+
+  const getCardSize = (priority: number, isGrouped: boolean = false) => {
+    if (isGrouped) return { width: width - 40, height: 100 };
+    if (priority >= 8) return { width: width - 40, height: 140 };
+    if (priority >= 6) return { width: (width - 52) / 2, height: 120 };
+    if (priority >= 4) return { width: (width - 52) / 2, height: 100 };
+    return { width: (width - 52) / 2, height: 80 };
+  };
+
+  const handleSubtopicPress = (subtopic: Subtopic) => {
+    router.push({
+      pathname: '/topic-justify',
+      params: { 
+        topicId: subtopic.id,
+        topicName: subtopic.name,
+        topicColor: topicColor,
+        rating: subtopic.rating.toString(),
+        questionsCount: subtopic.questionsCount.toString(),
+        difficulty: subtopic.difficulty,
+        isHot: subtopic.isHot.toString()
+      }
+    });
+  };
+
+  const handleGroupPress = (group: GroupedSubtopic) => {
+    console.log('Group pressed:', group.name, 'Topics:', group.subtopics.length);
+  };
+
   // Group subtopics by priority
   const groupSubtopics = (subtopics: Subtopic[]) => {
     const highPriority = subtopics.filter(s => s.priority >= 6);
@@ -142,42 +179,6 @@ export default function Subtopics() {
     const shades = [
       baseColor, // Original color
       `${baseColor}E6`, // 90% opacity
-      `${baseColor}CC`, // 80% opacity
-      `${baseColor}B3`, // 70% opacity
-      `${baseColor}99`, // 60% opacity
-      `${baseColor}80`, // 50% opacity
-    ];
-    return shades[index % shades.length];
-  };
-
-  const getCardSize = (priority: number, isGrouped: boolean = false) => {
-    if (isGrouped) return { width: width - 40, height: 100 }; // Full width for groups
-    if (priority >= 8) return { width: width - 40, height: 140 }; // Large for high priority
-    if (priority >= 6) return { width: (width - 52) / 2, height: 120 }; // Medium
-    if (priority >= 4) return { width: (width - 52) / 2, height: 100 }; // Small
-    return { width: (width - 52) / 2, height: 80 }; // Extra small
-  };
-
-  const handleSubtopicPress = (subtopic: Subtopic) => {
-    router.push({
-      pathname: '/topic-justify',
-      params: { 
-        topicId: subtopic.id,
-        topicName: subtopic.name,
-        topicColor: topicColor,
-        rating: subtopic.rating.toString(),
-        questionsCount: subtopic.questionsCount.toString(),
-        difficulty: subtopic.difficulty,
-        isHot: subtopic.isHot.toString()
-      }
-    });
-  };
-
-  const handleGroupPress = (group: GroupedSubtopic) => {
-    // Could navigate to expanded view or show modal with all topics
-    console.log('Group pressed:', group.name, 'Topics:', group.subtopics.length);
-  };
-
   const filteredHighPriority = highPriority.filter(subtopic =>
     subtopic.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
