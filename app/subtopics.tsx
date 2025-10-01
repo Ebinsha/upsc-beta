@@ -34,7 +34,17 @@ export default function Subtopics() {
 
   // Get real subtopics data from topic.json
   const getSubtopicsFromJson = (topicId: string): Subtopic[] => {
-    const topicKey = topicId === "1" ? "environment" : "ethics"; // Map topic IDs
+    // Map topic IDs to the correct keys in topic.json
+    let topicKey: string;
+    if (topicId === "1") {
+      topicKey = "environment";
+    } else if (topicId === "5") {
+      topicKey = "ethics";
+    } else {
+      // For other topics, return empty array for now
+      return [];
+    }
+    
     const topicInfo = topicData[topicKey as keyof typeof topicData];
     
     if (!topicInfo || !topicInfo.subtopic) return [];
@@ -44,7 +54,7 @@ export default function Subtopics() {
 
     // Create subtopics from the JSON data
     Object.entries(ids).forEach(([id, name]) => {
-      const priority = (names as any)[name] || 1;
+      const priority = names[name as keyof typeof names] || 1;
       const isHot = priority >= 7;
       
       subtopics.push({
