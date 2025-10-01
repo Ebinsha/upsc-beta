@@ -1,7 +1,8 @@
 import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Star, Clock, Target, Play } from 'lucide-react-native';
+import { ArrowLeft, Star, Clock, Target, Play, ZoomIn, Calendar } from 'lucide-react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { useState } from 'react';
 
 const { width } = Dimensions.get('window');
 
@@ -16,14 +17,35 @@ export default function TopicJustify() {
     isHot
   } = params;
 
-  // Mock analytics data
-  const analyticsData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [{
-      data: [12, 18, 15, 22, 28, 35],
-      strokeWidth: 3,
-    }]
+  const [selectedTimeRange, setSelectedTimeRange] = useState<'1Y' | '3Y' | '5Y'>('1Y');
+  const [chartScrollEnabled, setChartScrollEnabled] = useState(false);
+
+  // Mock analytics data for 5 years (2019-2024)
+  const fullAnalyticsData = {
+    '5Y': {
+      labels: ['2019', '2020', '2021', '2022', '2023', '2024'],
+      datasets: [{
+        data: [8, 12, 18, 25, 32, 45],
+        strokeWidth: 3,
+      }]
+    },
+    '3Y': {
+      labels: ['2022', '2023', '2024'],
+      datasets: [{
+        data: [25, 32, 45],
+        strokeWidth: 3,
+      }]
+    },
+    '1Y': {
+      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+      datasets: [{
+        data: [38, 42, 45, 48],
+        strokeWidth: 3,
+      }]
+    }
   };
+
+  const currentData = fullAnalyticsData[selectedTimeRange];
 
   const recommendations = [
     {
@@ -47,6 +69,12 @@ export default function TopicJustify() {
     { title: 'Quick Practice', questions: 10, time: '15 min', difficulty: 'Easy' },
     { title: 'Standard Practice', questions: 25, time: '35 min', difficulty: 'Medium' },
     { title: 'Advanced Practice', questions: 50, time: '60 min', difficulty: 'Hard' },
+  ];
+
+  const timeRanges = [
+    { key: '1Y' as const, label: '1 Year', description: 'Quarterly data' },
+    { key: '3Y' as const, label: '3 Years', description: 'Annual trends' },
+    { key: '5Y' as const, label: '5 Years', description: 'Long-term analysis' }
   ];
 
   return (
@@ -75,28 +103,128 @@ export default function TopicJustify() {
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         <View className="bg-white m-5 p-5 rounded-2xl shadow-sm">
-          <Text className="text-lg font-bold text-slate-800 mb-1">Question Frequency Trend</Text>
-          <Text className="text-sm text-slate-500 mb-4">
-            How often this topic appears in exams over time
-          </Text>
+          <View className="flex-row justify-between items-center mb-3">
+            <View className="flex-1">
+              <Text className="text-lg font-bold text-slate-800 mb-1">Question Frequency Trend</Text>
+              <Text className="text-sm text-slate-500">
+                How often this topic appears in exams over time
+              </Text>
+            </View>
+            <TouchableOpacity 
+              className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center"
+              onPress={() => setChartScrollEnabled(!chartScrollEnabled)}
+            >
+              <ZoomIn size={16} color="#3b82f6" />
+            </TouchableOpacity>
+          </View>
           
-          <LineChart
-            data={analyticsData}
-            width={width - 40}
-            height={200}
-            chartConfig={{
-              backgroundColor: '#ffffff',
-              backgroundGradientFrom: '#ffffff',
-              backgroundGradientTo: '#ffffff',
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
-              style: {
-                borderRadius: 16,
-              },
-            }}
+          {/* Time Range Selector */}
+          <View className="flex-row bg-slate-100 rounded-xl p-1 mb-4">
+            {timeRanges.map((range) => (
+              <TouchableOpacity
+                key={range.key}
+                className={`flex-1 py-2 px-3 rounded-lg items-center ${
+                  selectedTimeRange === range.key ? 'bg-white shadow-sm' : ''
+                }`}
+                onPress={() => setSelectedTimeRange(range.key)}
+              >
+                <Text className={`text-sm font-semibold ${
+                  selectedTimeRange === range.key ? 'text-blue-600' : 'text-slate-600'
+                }`}>
+                  {range.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          
+          {/* Chart Description */}
+          <View className="bg-blue-50 p-3 rounded-xl mb-4">
+            <View className="flex-row items-center gap-2 mb-1">
+              <Calendar size={16} color="#3b82f6" />
+              <Text className="text-sm font-semibold text-blue-800">
+                {timeRanges.find(r => r.key === selectedTimeRange)?.description}
+              </Text>
+            </View>
+            <Text className="text-xs text-blue-700">
+              {selectedTimeRange === '5Y' && 'Shows 5-year trend with annual data points'}
+              {selectedTimeRange === '3Y' && 'Shows recent 3-year trend with detailed analysis'}
+              {selectedTimeRange === '1Y' && 'Shows current year quarterly breakdown'}
+            </Text>
+          </View>
+          
+          {/* Enhanced Chart */}
+          <ScrollView 
+            horizontal={chartScrollEnabled && selectedTimeRange === '5Y'}
+            showsHorizontalScrollIndicator={false}
             className="rounded-xl"
-            bezier
-          />
+          >
+            <LineChart
+              data={currentData}
+              width={chartScrollEnabled && selectedTimeRange === '5Y' ? width * 1.5 : width - 40}
+              height={220}
+              chartConfig={{
+                backgroundColor: '#ffffff',
+                backgroundGradientFrom: '#ffffff',
+                backgroundGradientTo: '#f8fafc',
+                decimalPlaces: 0,
+                color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
+                style: {
+                  borderRadius: 16,
+                },
+                propsForDots: {
+                  r: "6",
+                  strokeWidth: "3",
+                  stroke: "#3b82f6",
+                  fill: "#ffffff"
+                },
+                propsForBackgroundLines: {
+                  strokeDasharray: "5,5",
+                  stroke: "#e2e8f0",
+                  strokeWidth: 1
+                }
+              }}
+              className="rounded-xl"
+              bezier
+              withDots={true}
+              withShadow={false}
+              withVerticalLabels={true}
+              withHorizontalLabels={true}
+              fromZero={true}
+            />
+          </ScrollView>
+          
+          {chartScrollEnabled && selectedTimeRange === '5Y' && (
+            <Text className="text-xs text-slate-500 text-center mt-2">
+              💡 Scroll horizontally to view detailed 5-year data
+            </Text>
+          )}
+          
+          {/* Data Insights */}
+          <View className="mt-4 p-3 bg-slate-50 rounded-xl">
+            <Text className="text-sm font-semibold text-slate-800 mb-2">Key Insights:</Text>
+            <View className="gap-1">
+              {selectedTimeRange === '5Y' && (
+                <>
+                  <Text className="text-xs text-slate-600">• 463% growth over 5 years (8 → 45 questions)</Text>
+                  <Text className="text-xs text-slate-600">• Steepest growth in 2021-2022 period</Text>
+                  <Text className="text-xs text-slate-600">• Consistent upward trend indicates high relevance</Text>
+                </>
+              )}
+              {selectedTimeRange === '3Y' && (
+                <>
+                  <Text className="text-xs text-slate-600">• 80% increase in recent 3 years</Text>
+                  <Text className="text-xs text-slate-600">• Accelerating trend in exam frequency</Text>
+                </>
+              )}
+              {selectedTimeRange === '1Y' && (
+                <>
+                  <Text className="text-xs text-slate-600">• Steady quarterly growth this year</Text>
+                  <Text className="text-xs text-slate-600">• Q4 shows highest question frequency</Text>
+                </>
+              )}
+            </View>
+          </View>
         </View>
 
         <View className="mx-5 mb-5">
