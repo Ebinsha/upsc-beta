@@ -44,7 +44,7 @@ export default function Subtopics() {
 
     // Create subtopics from the JSON data
     Object.entries(ids).forEach(([id, name]) => {
-      const priority = names[name as keyof typeof names] || 1;
+      const priority = (names as any)[name] || 1;
       const isHot = priority >= 7;
       
       subtopics.push({
