@@ -13,8 +13,8 @@ export default function Study() {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Use the API hook to fetch topics
-  const { data: topicsData, loading, error, refetch } = useTopics();
-  const topics: Topic[] = topicsData?.topics || [];
+  const { data: topics, loading, error, refetch } = useTopics();
+  const apiTopics: Topic[] = topics || [];
 
   // Fallback to mock data if API fails
   const mockTopics: Topic[] = [
@@ -75,7 +75,7 @@ export default function Study() {
     }
   ];
 
-  const displayTopics = topics.length > 0 ? topics : mockTopics;
+  const displayTopics = apiTopics.length > 0 ? apiTopics : mockTopics;
 
   const getCardSize = (priority: number) => {
     if (priority >= 9) return { width: width - 40, height: 140 }; // Large

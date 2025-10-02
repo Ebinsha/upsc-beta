@@ -94,12 +94,9 @@ export default function Subtopics() {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Use the API hook to fetch subtopics
-  const { data: subtopicsData, loading, error, refetch } = useSubtopics(
-    topicId as string,
-    { search: searchQuery }
-  );
+  const { data: subtopicsData, loading, error, refetch } = useSubtopics(topicName as string);
   
-  const apiSubtopics: Subtopic[] = subtopicsData?.subtopics || [];
+  const apiSubtopics: Subtopic[] = subtopicsData || [];
 
   // Helper functions - moved before usage
   const getSubtopicColor = (index: number, baseColor: string) => {

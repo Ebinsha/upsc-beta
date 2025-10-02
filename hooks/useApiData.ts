@@ -29,9 +29,10 @@ export function useApiData<T = any>({
   const [error, setError] = useState<string | null>(null);
 
   const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  const apiKey = process.env.EXPO_PUBLIC_API_KEY;
 
   const fetchData = async () => {
-    if (!enabled || !baseUrl) {
+    if (!enabled || !baseUrl || !apiKey) {
       return;
     }
 
@@ -45,6 +46,7 @@ export function useApiData<T = any>({
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
           ...headers,
         },
       };
@@ -88,34 +90,32 @@ export function useApiData<T = any>({
 
 // Specialized hooks for different data types
 export function useTopics() {
-  return useApiData<{ topics: any[] }>({
-    endpoint: '/topics',
+  return useApiData<Topic[]>({
+    endpoint: '/high_level_topic',
     method: 'GET'
   });
 }
 
-export function useSubtopics(topicId: string, filters?: any) {
-  return useApiData<{ subtopics: any[] }>({
-    endpoint: '/subtopics',
-    method: 'POST',
-    body: {
-      topicId,
-      ...filters
-    },
-    enabled: !!topicId,
-    dependencies: [topicId, filters]
+export function useSubtopics(topicName: string) {
+  // Convert topic name to lowercase endpoint (e.g., "Environment" -> "/environment")
+  const endpoint = `/${topicName.toLowerCase()}`;
+  
+  return useApiData<Subtopic[]>({
+    endpoint,
+    method: 'GET',
+    enabled: !!topicName,
+    dependencies: [topicName]
   });
 }
 
-export function useChartData(topicId: string, timeRange: string) {
-  return useApiData<{ chartData: any }>({
-    endpoint: '/chart-data',
+export function useChartData(subtopicId: string) {
+  return useApiData<ChartData>({
+    endpoint: '/line_chart',
     method: 'POST',
     body: {
-      topicId,
-      timeRange
+      subtopic_id: subtopicId
     },
-    enabled: !!topicId && !!timeRange,
-    dependencies: [topicId, timeRange]
+    enabled: !!subtopicId,
+    dependencies: [subtopicId]
   });
 }

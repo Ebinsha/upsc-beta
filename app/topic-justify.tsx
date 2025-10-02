@@ -22,10 +22,7 @@ export default function TopicJustify() {
   const [chartScrollEnabled, setChartScrollEnabled] = useState(false);
 
   // Use the API hook to fetch chart data
-  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(
-    topicName as string,
-    selectedTimeRange
-  );
+  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(topicName as string);
 
   // Mock analytics data for 5 years (2019-2024)
   const fullAnalyticsData = {
@@ -53,7 +50,7 @@ export default function TopicJustify() {
   };
 
   // Use API data if available, otherwise fallback to mock data
-  const currentData = chartApiData?.chartData || fullAnalyticsData[selectedTimeRange];
+  const currentData = chartApiData || fullAnalyticsData[selectedTimeRange];
   const currentInsights = chartApiData?.insights || [];
 
   const recommendations = [
