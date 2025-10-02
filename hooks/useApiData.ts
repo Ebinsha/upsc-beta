@@ -45,7 +45,10 @@ export function useApiData<T = any>({
       setLoading(true);
       setError(null);
 
-      const url = `${baseUrl}${endpoint}`;
+      // Ensure proper URL construction without double slashes
+      const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+      const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+      const url = `${cleanBaseUrl}${cleanEndpoint}`;
       
       const config: RequestInit = {
         method,
