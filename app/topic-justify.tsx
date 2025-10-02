@@ -124,7 +124,7 @@ export default function TopicJustify() {
               <TouchableOpacity
                 key={range.key}
                 className={`flex-1 py-2 px-3 rounded-lg items-center ${
-                  selectedTimeRange === range.key ? 'bg-white shadow-sm' : ''
+                  selectedTimeRange === range.key ? 'bg-white' : ''
                 }`}
                 onPress={() => setSelectedTimeRange(range.key)}
               >
