@@ -3,6 +3,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Star, Clock, Target, Play, ZoomIn, Calendar } from 'lucide-react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { useState } from 'react';
+import { useChartData } from '@/hooks/useApiData';
 
 const { width } = Dimensions.get('window');
 
@@ -19,6 +20,12 @@ export default function TopicJustify() {
 
   const [selectedTimeRange, setSelectedTimeRange] = useState<'1Y' | '3Y' | '5Y'>('1Y');
   const [chartScrollEnabled, setChartScrollEnabled] = useState(false);
+
+  // Use the API hook to fetch chart data
+  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(
+    topicName as string,
+    selectedTimeRange
+  );
 
   // Mock analytics data for 5 years (2019-2024)
   const fullAnalyticsData = {
@@ -45,7 +52,9 @@ export default function TopicJustify() {
     }
   };
 
-  const currentData = fullAnalyticsData[selectedTimeRange];
+  // Use API data if available, otherwise fallback to mock data
+  const currentData = chartApiData?.chartData || fullAnalyticsData[selectedTimeRange];
+  const currentInsights = chartApiData?.insights || [];
 
   const recommendations = [
     {
@@ -158,6 +167,19 @@ export default function TopicJustify() {
             showsHorizontalScrollIndicator={false}
             className="rounded-xl"
           >
+            {chartLoading && (
+              <View className="items-center justify-center h-52">
+                <Text className="text-sm text-slate-500">Loading chart data...</Text>
+              </View>
+            )}
+            
+            {chartError && (
+              <View className="items-center justify-center h-52">
+                <Text className="text-sm text-red-500">Error loading chart: {chartError}</Text>
+              </View>
+            )}
+            
+            {!chartLoading && !chartError && (
             <LineChart
               data={currentData}
               width={chartScrollEnabled && selectedTimeRange === '5Y' ? width * 1.5 : width - 40}
@@ -192,6 +214,7 @@ export default function TopicJustify() {
               withHorizontalLabels={true}
               fromZero={true}
             />
+            )}
           </ScrollView>
           
           {chartScrollEnabled && selectedTimeRange === '5Y' && (
@@ -204,6 +227,15 @@ export default function TopicJustify() {
           <View className="mt-4 p-3 bg-slate-50 rounded-xl">
             <Text className="text-sm font-semibold text-slate-800 mb-2">Key Insights:</Text>
             <View className="gap-1">
+              {currentInsights.length > 0 ? (
+                currentInsights.map((insight, index) => (
+                  <Text key={index} className="text-xs text-slate-600">
+                    • {insight.description}
+                    {insight.percentage && ` (${insight.percentage}%)`}
+                  </Text>
+                ))
+              ) : (
+                <>
               {selectedTimeRange === '5Y' && (
                 <>
                   <Text className="text-xs text-slate-600">• 463% growth over 5 years (8 → 45 questions)</Text>
@@ -221,6 +253,8 @@ export default function TopicJustify() {
                 <>
                   <Text className="text-xs text-slate-600">• Steady quarterly growth this year</Text>
                   <Text className="text-xs text-slate-600">• Q4 shows highest question frequency</Text>
+                </>
+              )}
                 </>
               )}
             </View>
