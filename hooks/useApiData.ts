@@ -148,14 +148,65 @@ export function useSubtopics(topicName: string) {
   // Convert topic name to lowercase endpoint (e.g., "Environment" -> "/environment")
   const endpoint = `/${topicName.toLowerCase()}`;
   
-  return useApiData<Subtopic[]>({
+  const { data: rawData, loading, error, refetch } = useApiData<Record<string, { subtopic: { number: number, ids: Record<string, { name: string, count: number }> } }>>({
     endpoint,
     method: 'GET',
     enabled: !!topicName,
     dependencies: [topicName]
   });
+
+  // Transform API data to match Subtopic structure
+  const transformedData = rawData ? transformSubtopicsData(rawData, topicName) : null;
+
+  return {
+    data: transformedData,
+    loading,
+    error,
+    refetch
+  };
 }
 
+// Helper function to transform API subtopics data to Subtopic structure
+function transformSubtopicsData(apiData: Record<string, { subtopic: { number: number, ids: Record<string, { name: string, count: number }> } }>, topicName: string): Subtopic[] {
+  const subtopicIcons = ['🔬', '📊', '🌐', '⚡', '🎯', '📈', '🔍', '💡', '🛠️', '📋', '🌟', '🚀'];
+  
+  // Get the first (and likely only) topic data from the response
+  const topicData = Object.values(apiData)[0];
+  if (!topicData || !topicData.subtopic || !topicData.subtopic.ids) {
+    return [];
+  }
+
+  const subtopicsIds = topicData.subtopic.ids;
+  
+  return Object.entries(subtopicsIds).map(([id, subtopicData], index) => {
+    const priority = subtopicData.count; // Use count as priority
+    const rating = Math.round((Math.random() * 4 + 1) * 10) / 10; // Random 1.0-5.0 with 1 decimal
+    const isHot = Math.random() > 0.7; // 30% chance of being hot
+    const questionsCount = Math.floor(Math.random() * 150) + 1; // Random 1-150
+    
+    // Determine difficulty based on questions count
+    let difficulty: 'Low' | 'Medium' | 'High';
+    if (questionsCount < 50) {
+      difficulty = 'Low';
+    } else if (questionsCount <= 100) {
+      difficulty = 'Medium';
+    } else {
+      difficulty = 'High';
+    }
+
+    return {
+      id,
+      name: subtopicData.name,
+      priority,
+      rating,
+      isHot,
+      icon: subtopicIcons[index % subtopicIcons.length],
+      questionsCount,
+      difficulty,
+      topicId: topicName.toLowerCase()
+    };
+  });
+}
 export function useChartData(subtopicId: string) {
   return useApiData<ChartData>({
     endpoint: '/line_chart',

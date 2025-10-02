@@ -94,9 +94,9 @@ export default function Subtopics() {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Use the API hook to fetch subtopics
-  const { data: subtopicsData, loading, error, refetch } = useSubtopics(topicName as string);
+  const { data: apiSubtopics, loading, error, refetch } = useSubtopics(topicName as string);
   
-  const apiSubtopics: Subtopic[] = subtopicsData || [];
+  const apiSubtopicsArray: Subtopic[] = apiSubtopics || [];
 
   // Helper functions - moved before usage
   const getSubtopicColor = (index: number, baseColor: string) => {
@@ -117,7 +117,7 @@ export default function Subtopics() {
   };
 
   // Use API data if available, otherwise fallback to mock data
-  const subtopicsToUse = apiSubtopics.length > 0 ? apiSubtopics : mockSubtopics;
+  const subtopicsToUse = apiSubtopicsArray.length > 0 ? apiSubtopicsArray : mockSubtopics;
 
   const handleSubtopicPress = (subtopic: Subtopic) => {
     router.push({
