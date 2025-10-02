@@ -32,7 +32,12 @@ export function useApiData<T = any>({
   const apiKey = process.env.EXPO_PUBLIC_API_KEY;
 
   const fetchData = async () => {
-    if (!enabled || !baseUrl || !apiKey) {
+    if (!enabled) {
+      return;
+    }
+    
+    if (!baseUrl || !apiKey) {
+      setError('API configuration missing. Please check environment variables.');
       return;
     }
 
@@ -58,15 +63,34 @@ export function useApiData<T = any>({
       const response = await fetch(url, config);
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.status === 404) {
+          throw new Error(`API endpoint not found: ${endpoint}`);
+        } else if (response.status === 401) {
+          throw new Error('API authentication failed. Please check your API key.');
+        } else if (response.status === 403) {
+          throw new Error('API access forbidden. Please check your permissions.');
+        } else {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
       }
 
       const result = await response.json();
       setData(result);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      let errorMessage = 'An unknown error occurred';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('CORS')) {
+          errorMessage = 'CORS error: Server does not allow cross-origin requests. Please contact the API administrator.';
+        } else if (err.message.includes('Failed to fetch')) {
+          errorMessage = 'Network error: Unable to connect to the API server. Please check your internet connection.';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
       setError(errorMessage);
-      console.error('API fetch error:', errorMessage);
+      console.error('API fetch error:', err);
     } finally {
       setLoading(false);
     }

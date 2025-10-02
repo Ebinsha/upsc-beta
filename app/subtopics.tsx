@@ -219,10 +219,12 @@ export default function Subtopics() {
         
         {error && (
           <View className="mt-2">
-            <Text className="text-sm text-red-400">Error: {error}</Text>
+            <Text className="text-sm text-red-400 mb-1">API Error:</Text>
+            <Text className="text-xs text-red-300 mb-2">{error}</Text>
             <TouchableOpacity onPress={refetch} className="mt-1">
-              <Text className="text-sm text-blue-400">Tap to retry</Text>
+              <Text className="text-sm text-blue-400">Retry API Call</Text>
             </TouchableOpacity>
+            <Text className="text-xs text-slate-400 mt-1">Using fallback data for now</Text>
           </View>
         )}
       </View>

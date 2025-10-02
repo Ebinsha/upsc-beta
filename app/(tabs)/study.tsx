@@ -138,10 +138,12 @@ export default function Study() {
         
         {error && (
           <View className="mt-2">
-            <Text className="text-sm text-red-500">Error: {error}</Text>
+            <Text className="text-sm text-red-500 mb-1">API Error:</Text>
+            <Text className="text-xs text-red-400 mb-2">{error}</Text>
             <TouchableOpacity onPress={refetch} className="mt-1">
-              <Text className="text-sm text-blue-500">Tap to retry</Text>
+              <Text className="text-sm text-blue-500">Retry API Call</Text>
             </TouchableOpacity>
+            <Text className="text-xs text-slate-500 mt-1">Using fallback data for now</Text>
           </View>
         )}
       </View>
