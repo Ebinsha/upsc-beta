@@ -3,19 +3,10 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Search, Package, ChevronRight, Flame } from 'lucide-react-native';
 import { useState } from 'react';
 import { TopicCard } from '@/components/TopicCard';
+import { useSubtopics } from '@/hooks/useApiData';
+import { Subtopic } from '@/types/api';
 
 const { width } = Dimensions.get('window');
-
-interface Subtopic {
-  id: string;
-  name: string;
-  priority: number;
-  rating: number;
-  isHot: boolean;
-  icon: string;
-  questionsCount: number;
-  difficulty: string;
-}
 
 interface GroupedSubtopic {
   id: string;
@@ -101,6 +92,11 @@ export default function Subtopics() {
   const params = useLocalSearchParams();
   const { topicId, topicName, topicColor } = params;
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Use the API hook to fetch subtopics
+  const { data: apiSubtopics, loading, error, refetch } = useSubtopics(topicName as string);
+  
+  const apiSubtopicsArray: Subtopic[] = apiSubtopics || [];
 
   // Helper functions - moved before usage
   const getSubtopicColor = (index: number, baseColor: string) => {
@@ -119,6 +115,9 @@ export default function Subtopics() {
     if (priority >= 4) return { width: (width - 52) / 2, height: 100 };
     return { width: (width - 52) / 2, height: 80 };
   };
+
+  // Use API data if available, otherwise fallback to mock data
+  const subtopicsToUse = apiSubtopicsArray.length > 0 ? apiSubtopicsArray : mockSubtopics;
 
   const handleSubtopicPress = (subtopic: Subtopic) => {
     router.push({
@@ -140,7 +139,7 @@ export default function Subtopics() {
   };
 
   // Group subtopics by priority
-  const groupSubtopics = (subtopics: Subtopic[]) => {
+  const groupSubtopics = (subtopics: Subtopic[] | any[]) => {
     const highPriority = subtopics.filter(s => s.priority >= 6);
     const mediumPriority = subtopics.filter(s => s.priority >= 4 && s.priority < 6);
     const lowPriority = subtopics.filter(s => s.priority < 4);
@@ -171,7 +170,7 @@ export default function Subtopics() {
     return { highPriority, mediumPriority, grouped };
   };
 
-  const { highPriority, mediumPriority, grouped } = groupSubtopics(mockSubtopics);
+  const { highPriority, mediumPriority, grouped } = groupSubtopics(subtopicsToUse);
 
   const filteredHighPriority = highPriority.filter(subtopic =>
     subtopic.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -199,7 +198,7 @@ export default function Subtopics() {
         <View className="gap-2 mb-5">
           <Text className="text-3xl font-bold text-slate-800">{topicName}</Text>
           <Text className="text-base text-slate-600">
-            {mockSubtopics.length} subtopics • {highPriority.length} high priority • {mediumPriority.length} medium priority
+            {subtopicsToUse.length} subtopics • {highPriority.length} high priority • {mediumPriority.length} medium priority
           </Text>
         </View>
         
@@ -213,6 +212,19 @@ export default function Subtopics() {
             onChangeText={setSearchQuery}
           />
         </View>
+        
+        {loading && (
+          <Text className="text-sm text-slate-600 mt-2">Loading subtopics...</Text>
+        )}
+        
+        {error && (
+          <View className="mt-2">
+            <Text className="text-sm text-red-400">Error: {error}</Text>
+            <TouchableOpacity onPress={refetch} className="mt-1">
+              <Text className="text-sm text-blue-400">Tap to retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 p-5">

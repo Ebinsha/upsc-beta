@@ -3,15 +3,79 @@ import { Search, Settings, Star, Flame } from 'lucide-react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { TopicCard } from '@/components/TopicCard';
-import { Topic } from '@/types/topic';
-import topicData from '@/constants/topic-const.json';
+import { Topic } from '@/types/api';
+import { useTopics } from '@/hooks/useApiData';
 
 
 const { width } = Dimensions.get('window');
 
 export default function Study() {
   const [searchQuery, setSearchQuery] = useState('');
-  const topics: Topic[] = topicData.topics;
+  
+  // Use the API hook to fetch topics
+  const { data: topics, loading, error, refetch } = useTopics();
+  const apiTopics: Topic[] = topics || [];
+
+  // Only use mock data if there's an error and no API data
+  const mockTopics: Topic[] = error && !apiTopics.length ? [
+    {
+      id: "1",
+      name: "Environment",
+      priority: 10,
+      rating: 4.8,
+      isHot: true,
+      color: "#F5A3A3",
+      icon: "🌱",
+      subtopicCount: 145,
+      difficulty: "High"
+    },
+    {
+      id: "2",
+      name: "History",
+      priority: 8,
+      rating: 4.5,
+      isHot: false,
+      color: "#A3C3F5",
+      icon: "📚",
+      subtopicCount: 120,
+      difficulty: "Medium"
+    },
+    {
+      id: "3",
+      name: "Geography",
+      priority: 7,
+      rating: 4.3,
+      isHot: false,
+      color: "#7DB8E8",
+      icon: "🌍",
+      subtopicCount: 98,
+      difficulty: "Medium"
+    },
+    {
+      id: "4",
+      name: "Economy",
+      priority: 9,
+      rating: 4.7,
+      isHot: true,
+      color: "#E67E22",
+      icon: "💰",
+      subtopicCount: 132,
+      difficulty: "High"
+    },
+    {
+      id: "5",
+      name: "Ethics",
+      priority: 6,
+      rating: 4.1,
+      isHot: false,
+      color: "#C39BD3",
+      icon: "⚖️",
+      subtopicCount: 87,
+      difficulty: "Low"
+    }
+  ] : [];
+
+  const displayTopics = !loading && topics ? topics : mockTopics;
 
   const getCardSize = (priority: number) => {
     if (priority >= 9) return { width: width - 40, height: 140 }; // Large
@@ -67,13 +131,26 @@ export default function Study() {
             onChangeText={setSearchQuery}
           />
         </View>
+        
+        {loading && (
+          <Text className="text-sm text-slate-500 mt-2">Loading topics...</Text>
+        )}
+        
+        {error && (
+          <View className="mt-2">
+            <Text className="text-sm text-red-500">Error: {error}</Text>
+            <TouchableOpacity onPress={refetch} className="mt-1">
+              <Text className="text-sm text-blue-500">Tap to retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 p-5">
         <Text className="text-xl font-bold text-slate-800 mb-5">Tend Based Topic Distribution</Text>
         
         <View className="flex-row flex-wrap gap-3">
-          {topics
+          {displayTopics
             .sort((a, b) => b.priority - a.priority)
             .map((topic) => {
               const cardSize = getCardSize(topic.priority);
@@ -91,7 +168,7 @@ export default function Study() {
                   width={cardSize.width}
                   height={cardSize.height}
                   bottomLeftText=""
-                  bottomRightText={[`${topic.subtopicCount} Subtopic`, topic.difficulty]}
+                  bottomRightText={[`${topic.subtopicCount} Questions`, topic.difficulty]}
                   onPress={() => handleTopicPress(topic)}
                 />
               );
