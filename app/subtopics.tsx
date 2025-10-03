@@ -30,7 +30,11 @@ export default function Subtopics() {
   
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    try {
+      await refetch();
+    } catch (error) {
+      console.error('Refresh error:', error);
+    }
     setRefreshing(false);
   };
 
