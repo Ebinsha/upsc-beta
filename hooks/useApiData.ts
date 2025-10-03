@@ -1,5 +1,5 @@
 import { Subtopic } from '@/types/topic';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface UseApiDataOptions {
   endpoint: string;
