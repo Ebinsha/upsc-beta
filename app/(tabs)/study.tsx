@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { Search, Settings, Star, Flame } from 'lucide-react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
@@ -14,68 +14,14 @@ export default function Study() {
   
   // Use the API hook to fetch topics
   const { data: topics, loading, error, refetch } = useTopics();
-  const apiTopics: Topic[] = topics || [];
+  
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Fallback to mock data if API fails
-  const mockTopics: Topic[] = [
-    {
-      id: "1",
-      name: "Environment",
-      priority: 10,
-      rating: 4.8,
-      isHot: true,
-      color: "#F5A3A3",
-      icon: "🌱",
-      subtopicCount: 145,
-      difficulty: "High"
-    },
-    {
-      id: "2",
-      name: "History",
-      priority: 8,
-      rating: 4.5,
-      isHot: false,
-      color: "#A3C3F5",
-      icon: "📚",
-      subtopicCount: 120,
-      difficulty: "Medium"
-    },
-    {
-      id: "3",
-      name: "Geography",
-      priority: 7,
-      rating: 4.3,
-      isHot: false,
-      color: "#7DB8E8",
-      icon: "🌍",
-      subtopicCount: 98,
-      difficulty: "Medium"
-    },
-    {
-      id: "4",
-      name: "Economy",
-      priority: 9,
-      rating: 4.7,
-      isHot: true,
-      color: "#E67E22",
-      icon: "💰",
-      subtopicCount: 132,
-      difficulty: "High"
-    },
-    {
-      id: "5",
-      name: "Ethics",
-      priority: 6,
-      rating: 4.1,
-      isHot: false,
-      color: "#C39BD3",
-      icon: "⚖️",
-      subtopicCount: 87,
-      difficulty: "Low"
-    }
-  ];
-
-  const displayTopics = apiTopics.length > 0 ? apiTopics : mockTopics;
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   const getCardSize = (priority: number) => {
     if (priority >= 9) return { width: width - 40, height: 140 }; // Large
@@ -83,32 +29,16 @@ export default function Study() {
     return { width: (width - 52) / 2, height: 100 }; // Small
   };
 
-  // const handleTopicPress = (topic: Topic) => {
-  //   router.push({
-  //     pathname: '/topic-justify',
-  //     params: { 
-  //       topicId: topic.id,
-  //       topicName: topic.name,
-  //       topicColor: topic.color,
-  //       rating: topic.rating.toString(),
-  //       questionsCount: topic.subtopicCount.toString(),
-  //       difficulty: topic.difficulty,
-  //       isHot: topic.isHot.toString()
-  //     }
-  //   });
-  // };
-
-      const handleTopicPress = (topic: Topic) => {
-        router.push({
-          pathname:'/subtopics',
-          params: { 
-            topicId: topic.id,
-            topicName: topic.name,
-            topicColor: topic.color
-          }
-        });
-      };
-  
+  const handleTopicPress = (topic: Topic) => {
+    router.push({
+      pathname: '/subtopics',
+      params: { 
+        topicId: topic.id,
+        topicName: topic.name,
+        topicColor: topic.color
+      }
+    });
+  };
 
 
   return (
@@ -131,52 +61,79 @@ export default function Study() {
             onChangeText={setSearchQuery}
           />
         </View>
-        
-        {loading && (
-          <Text className="text-sm text-slate-500 mt-2">Loading topics...</Text>
-        )}
-        
-        {error && (
-          <View className="mt-2">
-            <Text className="text-sm text-red-500 mb-1">API Error:</Text>
-            <Text className="text-xs text-red-400 mb-2">{error}</Text>
-            <TouchableOpacity onPress={refetch} className="mt-1">
-              <Text className="text-sm text-blue-500">Retry API Call</Text>
-            </TouchableOpacity>
-            <Text className="text-xs text-slate-500 mt-1">Using fallback data for now</Text>
-          </View>
-        )}
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 p-5">
-        <Text className="text-xl font-bold text-slate-800 mb-5">Tend Based Topic Distribution</Text>
-        
-        <View className="flex-row flex-wrap gap-3">
-          {displayTopics
-            .sort((a, b) => b.priority - a.priority)
-            .map((topic) => {
-              const cardSize = getCardSize(topic.priority);
-              
-              return (
-                <TopicCard
-                  key={topic.id}
-                  id={topic.id}
-                  name={topic.name}
-                  priority={topic.priority}
-                  rating={topic.rating}
-                  isHot={topic.isHot}
-                  icon={topic.icon}
-                  color={topic.color}
-                  width={cardSize.width}
-                  height={cardSize.height}
-                  bottomLeftText=""
-                  bottomRightText={[`${topic.subtopicCount} Questions`, topic.difficulty]}
-                  onPress={() => handleTopicPress(topic)}
-                />
-              );
-            })}
+      {loading && !refreshing ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#3b82f6" />
+          <Text className="text-base text-slate-600 mt-4">Loading topics...</Text>
         </View>
-      </ScrollView>
+      ) : error && !topics ? (
+        <View className="flex-1 justify-center items-center px-5">
+          <Text className="text-6xl mb-4">😕</Text>
+          <Text className="text-xl font-bold text-slate-800 mb-2 text-center">Oops! Something went wrong</Text>
+          <Text className="text-base text-slate-500 mb-6 text-center">
+            We couldn't load the topics. Please check your connection and try again.
+          </Text>
+          <TouchableOpacity 
+            className="bg-blue-500 px-6 py-3 rounded-xl"
+            onPress={refetch}
+          >
+            <Text className="text-white font-semibold">Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ScrollView 
+          showsVerticalScrollIndicator={false} 
+          className="flex-1 p-5"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#3b82f6']}
+              tintColor="#3b82f6"
+            />
+          }
+        >
+          <Text className="text-xl font-bold text-slate-800 mb-5">Trend Based Topic Distribution</Text>
+          
+          {topics && topics.length > 0 ? (
+            <View className="flex-row flex-wrap gap-3">
+              {topics
+                .sort((a, b) => b.priority - a.priority)
+                .map((topic) => {
+                  const cardSize = getCardSize(topic.priority);
+                  
+                  return (
+                    <TopicCard
+                      key={topic.id}
+                      id={topic.id}
+                      name={topic.name}
+                      priority={topic.priority}
+                      rating={topic.rating}
+                      isHot={topic.isHot}
+                      icon={topic.icon}
+                      color={topic.color}
+                      width={cardSize.width}
+                      height={cardSize.height}
+                      bottomLeftText=""
+                      bottomRightText={[`${topic.subtopicCount} Questions`, topic.difficulty]}
+                      onPress={() => handleTopicPress(topic)}
+                    />
+                  );
+                })}
+            </View>
+          ) : (
+            <View className="flex-1 justify-center items-center py-20">
+              <Text className="text-4xl mb-4">📚</Text>
+              <Text className="text-lg font-semibold text-slate-800 mb-2">No topics available</Text>
+              <Text className="text-base text-slate-500 text-center">
+                Pull down to refresh and load topics
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 }

@@ -100,6 +100,7 @@ export function useApiData<T = any>({
   };
 
   const refetch = () => {
+    setData(null); // Clear existing data to prevent flickering
     fetchData();
   };
 
