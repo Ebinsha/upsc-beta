@@ -1,19 +1,19 @@
 {
   "topics": [
     {
-      "id": "1",
-      "name": "Environment",
-      "priority": 10,
-      "rating": 4.8,
-      "isHot": true,
-      "color": "#F5A3A3",
-      "icon": "🌱",
-      "subtopicCount": 145,
-      "difficulty": "High"
+      "id": "1",  //topic name to be used as id
+      "name": "Environment", //topic name to be displayed
+      "priority": 10, // math.random 1 to 10 need to select only whole numbers
+      "rating": 4.8, // math.random 1 to 5 one decimal point can be used
+      "isHot": true, //random true or false
+      "color": "#F5A3A3", //any hex color code
+      "icon": "🌱", //any icon
+      "subtopicCount": 145, //from API 
+      "difficulty": "High" // Low, Medium, High - based on subtopicCount (Low: <100, Medium: 100-130, High: >130)
     },
     {
       "id": "2",
-      "name": "History",
+      "name": "Polity",
       "priority": 8,
       "rating": 4.5,
       "isHot": false,
@@ -24,7 +24,7 @@
     },
     {
       "id": "3",
-      "name": "Geography",
+      "name": "Culture",
       "priority": 7,
       "rating": 4.3,
       "isHot": false,
@@ -54,6 +54,64 @@
       "icon": "⚖️",
       "subtopicCount": 87,
       "difficulty": "Low"
+    },
+    {
+      "id": "6",
+      "name": "Science & Tech",
+      "priority": 8,
+      "rating": 4.6,
+      "isHot": true,
+      "color": "#76D7C4",
+      "icon": "🔬",
+      "subtopicCount": 110,
+      "difficulty": "High"
+    },
+  
+    {
+      "id": "7",
+      "name": "others",
+      "priority": 6,
+      "rating": 4.2,
+      "isHot": false,
+      "color": "#85C1E9",
+      "icon": "🗺️",
+      "subtopicCount": 89,
+      "difficulty": "Low"
+    },
+    {
+      "id": "8",
+      "name": "International Relations",
+      "priority": 6,
+      "rating": 4.5,
+      "isHot": true,
+      "color": "#F1948A",
+      "icon": "🌐",
+      "subtopicCount": 123,
+      "difficulty": "High"
+    },
+    {
+      "id": "9",
+      "name": "National Security",
+      "priority": 4,
+      "rating": 4.9,
+      "isHot": true,
+      "color": "#58D68D",
+      "icon": "📰",
+      "subtopicCount": 150,
+      "difficulty": "High"
+    },
+    {
+      "id": "10",
+      "name": "Social",
+      "priority": 3,
+      "rating": 4.4,
+      "isHot": false,
+      "color": "#F7DC6F",
+      "icon": "🏛️",
+      "subtopicCount": 95,
+      "difficulty": "Medium"
     }
+
+
   ]
 }

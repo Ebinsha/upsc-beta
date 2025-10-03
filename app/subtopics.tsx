@@ -1,10 +1,10 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Search, Package, ChevronRight, Flame } from 'lucide-react-native';
 import { useState } from 'react';
 import { TopicCard } from '@/components/TopicCard';
 import { useSubtopics } from '@/hooks/useApiData';
-import { Subtopic } from '@/types/api';
+import { Subtopic } from '@types/topic';
 
 const { width } = Dimensions.get('window');
 
@@ -17,86 +17,23 @@ interface GroupedSubtopic {
   color: string;
 }
 
-// Mock data with 60+ subtopics
-const mockSubtopics: Subtopic[] = [
-  // High Priority (8-10)
-  { id: '1', name: 'Climate Change and India', priority: 9, rating: 4.8, isHot: true, icon: '🌡️', questionsCount: 45, difficulty: 'High' },
-  { id: '2', name: 'Air Pollution Control', priority: 8, rating: 4.6, isHot: true, icon: '💨', questionsCount: 38, difficulty: 'High' },
-  { id: '3', name: 'Water Scarcity Management', priority: 8, rating: 4.5, isHot: true, icon: '💧', questionsCount: 42, difficulty: 'High' },
-  { id: '4', name: 'Renewable Energy Policy', priority: 8, rating: 4.7, isHot: true, icon: '⚡', questionsCount: 40, difficulty: 'High' },
-  { id: '5', name: 'Human-Wildlife Conflict', priority: 9, rating: 4.6, isHot: true, icon: '🐅', questionsCount: 35, difficulty: 'High' },
-  
-  // Medium-High Priority (6-7)
-  { id: '6', name: 'Forest Conservation Act', priority: 7, rating: 4.3, isHot: false, icon: '🌲', questionsCount: 32, difficulty: 'Medium' },
-  { id: '7', name: 'Plastic Waste Management', priority: 7, rating: 4.2, isHot: false, icon: '♻️', questionsCount: 28, difficulty: 'Medium' },
-  { id: '8', name: 'National Green Tribunal', priority: 7, rating: 4.4, isHot: false, icon: '⚖️', questionsCount: 30, difficulty: 'Medium' },
-  { id: '9', name: 'Himalayan Ecology', priority: 6, rating: 4.1, isHot: false, icon: '🏔️', questionsCount: 25, difficulty: 'Medium' },
-  { id: '10', name: 'Carbon Sequestration', priority: 6, rating: 4.0, isHot: false, icon: '🌿', questionsCount: 22, difficulty: 'Medium' },
-  { id: '11', name: 'Mangrove Conservation', priority: 7, rating: 4.3, isHot: false, icon: '🌿', questionsCount: 28, difficulty: 'Medium' },
-  { id: '12', name: 'National Action Plan Climate', priority: 6, rating: 4.2, isHot: false, icon: '📋', questionsCount: 24, difficulty: 'Medium' },
-  
-  // Medium Priority (4-5)
-  { id: '13', name: 'Biodiversity Conservation', priority: 4, rating: 3.8, isHot: false, icon: '🦋', questionsCount: 18, difficulty: 'Medium' },
-  { id: '14', name: 'Wetlands and Ramsar Sites', priority: 4, rating: 3.9, isHot: false, icon: '🦆', questionsCount: 20, difficulty: 'Medium' },
-  { id: '15', name: 'Wildlife Protection Act', priority: 5, rating: 4.0, isHot: false, icon: '🐅', questionsCount: 22, difficulty: 'Medium' },
-  { id: '16', name: 'Project Tiger Elephant', priority: 5, rating: 3.9, isHot: false, icon: '🐘', questionsCount: 21, difficulty: 'Medium' },
-  { id: '17', name: 'Clean Air Programme', priority: 5, rating: 4.1, isHot: false, icon: '🌬️', questionsCount: 23, difficulty: 'Medium' },
-  { id: '18', name: 'Green Hydrogen Mission', priority: 5, rating: 4.0, isHot: false, icon: '💡', questionsCount: 19, difficulty: 'Medium' },
-  { id: '19', name: 'E-Waste Management', priority: 4, rating: 3.8, isHot: false, icon: '📱', questionsCount: 17, difficulty: 'Medium' },
-  { id: '20', name: 'Compensatory Afforestation', priority: 4, rating: 3.7, isHot: false, icon: '🌱', questionsCount: 16, difficulty: 'Medium' },
-  { id: '21', name: 'Invasive Alien Species', priority: 4, rating: 3.6, isHot: false, icon: '🦎', questionsCount: 15, difficulty: 'Medium' },
-  { id: '22', name: 'Mission LiFE', priority: 4, rating: 3.8, isHot: false, icon: '🎯', questionsCount: 18, difficulty: 'Medium' },
-  { id: '23', name: 'Biodiversity Heritage Sites', priority: 4, rating: 3.7, isHot: false, icon: '🏛️', questionsCount: 16, difficulty: 'Medium' },
-  { id: '24', name: 'Bioremediation Techniques', priority: 4, rating: 3.9, isHot: false, icon: '🧪', questionsCount: 19, difficulty: 'Medium' },
-  { id: '25', name: 'Aravalli Range Conservation', priority: 4, rating: 3.8, isHot: false, icon: '🏔️', questionsCount: 17, difficulty: 'Medium' },
-  { id: '26', name: 'Forest Rights Act', priority: 5, rating: 4.0, isHot: false, icon: '📜', questionsCount: 21, difficulty: 'Medium' },
-  { id: '27', name: 'Sustainable Agriculture', priority: 5, rating: 4.1, isHot: false, icon: '🌾', questionsCount: 23, difficulty: 'Medium' },
-  { id: '28', name: 'Extreme Weather Events', priority: 4, rating: 3.9, isHot: false, icon: '⛈️', questionsCount: 20, difficulty: 'Medium' },
-  
-  // Low Priority (1-3)
-  { id: '29', name: 'Environmental Impact Assessment', priority: 3, rating: 3.5, isHot: false, icon: '📊', questionsCount: 12, difficulty: 'Low' },
-  { id: '30', name: 'Coastal Regulation Zone', priority: 3, rating: 3.4, isHot: false, icon: '🏖️', questionsCount: 11, difficulty: 'Low' },
-  { id: '31', name: 'GM Crops Regulation', priority: 3, rating: 3.6, isHot: false, icon: '🧬', questionsCount: 13, difficulty: 'Low' },
-  { id: '32', name: 'Desertification Control', priority: 3, rating: 3.3, isHot: false, icon: '🏜️', questionsCount: 10, difficulty: 'Low' },
-  { id: '33', name: 'Coral Reefs Marine Ecosystems', priority: 2, rating: 3.2, isHot: false, icon: '🐠', questionsCount: 8, difficulty: 'Low' },
-  { id: '34', name: 'Single Use Plastic Ban', priority: 2, rating: 3.1, isHot: false, icon: '🗑️', questionsCount: 7, difficulty: 'Low' },
-  { id: '35', name: 'Land Degradation', priority: 3, rating: 3.4, isHot: false, icon: '🌱', questionsCount: 11, difficulty: 'Low' },
-  { id: '36', name: 'Climate Finance', priority: 3, rating: 3.5, isHot: false, icon: '💰', questionsCount: 12, difficulty: 'Low' },
-  { id: '37', name: 'Ethanol Blending', priority: 2, rating: 3.0, isHot: false, icon: '⛽', questionsCount: 6, difficulty: 'Low' },
-  { id: '38', name: 'Biodiversity Hotspots India', priority: 3, rating: 3.3, isHot: false, icon: '🔥', questionsCount: 10, difficulty: 'Low' },
-  { id: '39', name: 'Western Ghats Ecology', priority: 2, rating: 3.1, isHot: false, icon: '⛰️', questionsCount: 7, difficulty: 'Low' },
-  { id: '40', name: 'Stubble Burning', priority: 3, rating: 3.4, isHot: false, icon: '🔥', questionsCount: 11, difficulty: 'Low' },
-  { id: '41', name: 'Greenhouse Gas Emissions', priority: 3, rating: 3.6, isHot: false, icon: '🏭', questionsCount: 13, difficulty: 'Low' },
-  { id: '42', name: 'Ganga Action Plan', priority: 3, rating: 3.5, isHot: false, icon: '🏞️', questionsCount: 12, difficulty: 'Low' },
-  { id: '43', name: 'Smog Towers', priority: 2, rating: 3.0, isHot: false, icon: '🏗️', questionsCount: 6, difficulty: 'Low' },
-  { id: '44', name: 'Zoonotic Diseases', priority: 2, rating: 3.2, isHot: false, icon: '🦠', questionsCount: 8, difficulty: 'Low' },
-  { id: '45', name: 'Fly Ash Management', priority: 1, rating: 2.8, isHot: false, icon: '🏭', questionsCount: 4, difficulty: 'Low' },
-  { id: '46', name: 'Cloud Seeding', priority: 1, rating: 2.9, isHot: false, icon: '☁️', questionsCount: 5, difficulty: 'Low' },
-  { id: '47', name: 'Heatwaves in India', priority: 3, rating: 3.4, isHot: false, icon: '🌡️', questionsCount: 11, difficulty: 'Low' },
-  { id: '48', name: 'Drought Management', priority: 2, rating: 3.1, isHot: false, icon: '🏜️', questionsCount: 7, difficulty: 'Low' },
-  { id: '49', name: 'Sand Mining', priority: 2, rating: 3.0, isHot: false, icon: '⛏️', questionsCount: 6, difficulty: 'Low' },
-  { id: '50', name: 'Landslides Avalanches', priority: 2, rating: 3.2, isHot: false, icon: '⛰️', questionsCount: 8, difficulty: 'Low' },
-  { id: '51', name: 'Glacial Lake Outburst Floods', priority: 3, rating: 3.5, isHot: false, icon: '🧊', questionsCount: 12, difficulty: 'Low' },
-  { id: '52', name: 'Urban Flooding', priority: 2, rating: 3.1, isHot: false, icon: '🏙️', questionsCount: 7, difficulty: 'Low' },
-  { id: '53', name: 'Soil Health Card Scheme', priority: 2, rating: 3.0, isHot: false, icon: '🌱', questionsCount: 6, difficulty: 'Low' },
-  { id: '54', name: 'Microplastics Pollution', priority: 1, rating: 2.9, isHot: false, icon: '🔬', questionsCount: 5, difficulty: 'Low' },
-  { id: '55', name: 'Deep Ocean Mission', priority: 3, rating: 3.4, isHot: false, icon: '🌊', questionsCount: 11, difficulty: 'Low' },
-  { id: '56', name: 'Light Pollution', priority: 1, rating: 2.7, isHot: false, icon: '💡', questionsCount: 3, difficulty: 'Low' },
-  { id: '57', name: 'Ocean Acidification', priority: 1, rating: 2.8, isHot: false, icon: '🌊', questionsCount: 4, difficulty: 'Low' },
-  { id: '58', name: 'Waste to Energy', priority: 2, rating: 3.1, isHot: false, icon: '⚡', questionsCount: 7, difficulty: 'Low' },
-  { id: '59', name: 'Green Building Standards', priority: 2, rating: 3.2, isHot: false, icon: '🏢', questionsCount: 8, difficulty: 'Low' },
-  { id: '60', name: 'Environmental Governance', priority: 3, rating: 3.5, isHot: false, icon: '⚖️', questionsCount: 12, difficulty: 'Low' },
-];
 
 export default function Subtopics() {
   const params = useLocalSearchParams();
   const { topicId, topicName, topicColor } = params;
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
   
   // Use the API hook to fetch subtopics
-  const { data: apiSubtopics, loading, error, refetch } = useSubtopics(topicName as string);
+  const { data: subtopics, loading, error, refetch } = useSubtopics(topicName as string);
   
-  const apiSubtopicsArray: Subtopic[] = apiSubtopics || [];
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
+  console.log(subtopics , topicName);
 
   // Helper functions - moved before usage
   const getSubtopicColor = (index: number, baseColor: string) => {
@@ -116,8 +53,6 @@ export default function Subtopics() {
     return { width: (width - 52) / 2, height: 80 };
   };
 
-  // Use API data if available, otherwise fallback to mock data
-  const subtopicsToUse = apiSubtopicsArray.length > 0 ? apiSubtopicsArray : mockSubtopics;
 
   const handleSubtopicPress = (subtopic: Subtopic) => {
     router.push({
@@ -139,10 +74,10 @@ export default function Subtopics() {
   };
 
   // Group subtopics by priority
-  const groupSubtopics = (subtopics: Subtopic[] | any[]) => {
-    const highPriority = subtopics.filter(s => s.priority >= 6);
-    const mediumPriority = subtopics.filter(s => s.priority >= 4 && s.priority < 6);
-    const lowPriority = subtopics.filter(s => s.priority < 4);
+  const groupSubtopics = (subtopicsData: Subtopic[]) => {
+    const highPriority = subtopicsData.filter(s => s.priority >= 6);
+    const mediumPriority = subtopicsData.filter(s => s.priority >= 4 && s.priority < 6);
+    const lowPriority = subtopicsData.filter(s => s.priority < 4);
 
     // Group low priority by priority level
     const grouped: GroupedSubtopic[] = [];
@@ -170,7 +105,8 @@ export default function Subtopics() {
     return { highPriority, mediumPriority, grouped };
   };
 
-  const { highPriority, mediumPriority, grouped } = groupSubtopics(subtopicsToUse);
+  // Only group subtopics if we have data
+  const { highPriority, mediumPriority, grouped } = subtopics ? groupSubtopics(subtopics) : { highPriority: [], mediumPriority: [], grouped: [] };
 
   const filteredHighPriority = highPriority.filter(subtopic =>
     subtopic.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -198,7 +134,7 @@ export default function Subtopics() {
         <View className="gap-2 mb-5">
           <Text className="text-3xl font-bold text-slate-800">{topicName}</Text>
           <Text className="text-base text-slate-600">
-            {subtopicsToUse.length} subtopics • {highPriority.length} high priority • {mediumPriority.length} medium priority
+            {subtopics ? subtopics.length : 0} subtopics • {highPriority.length} high priority • {mediumPriority.length} medium priority
           </Text>
         </View>
         
@@ -212,22 +148,42 @@ export default function Subtopics() {
             onChangeText={setSearchQuery}
           />
         </View>
-        
-        {loading && (
-          <Text className="text-sm text-slate-600 mt-2">Loading subtopics...</Text>
-        )}
-        
-        {error && (
-          <View className="mt-2">
-            <Text className="text-sm text-red-400">Error: {error}</Text>
-            <TouchableOpacity onPress={refetch} className="mt-1">
-              <Text className="text-sm text-blue-400">Tap to retry</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 p-5">
+      {loading && !refreshing ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#3b82f6" />
+          <Text className="text-base text-slate-600 mt-4">Loading subtopics...</Text>
+        </View>
+      ) : error && !subtopics ? (
+        <View className="flex-1 justify-center items-center px-5">
+          <Text className="text-6xl mb-4">😕</Text>
+          <Text className="text-xl font-bold text-slate-800 mb-2 text-center">Oops! Something went wrong</Text>
+          <Text className="text-base text-slate-500 mb-6 text-center">
+            We couldn't load the subtopics. Please check your connection and try again.
+          </Text>
+          <TouchableOpacity 
+            className="bg-blue-500 px-6 py-3 rounded-xl"
+            onPress={refetch}
+          >
+            <Text className="text-white font-semibold">Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ScrollView 
+          showsVerticalScrollIndicator={false} 
+          className="flex-1 p-5"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#3b82f6']}
+              tintColor="#3b82f6"
+            />
+          }
+        >
+          {subtopics && subtopics.length > 0 ? (
+            <>
         {/* High Priority Section */}
         {filteredHighPriority.length > 0 && (
           <>
@@ -341,7 +297,18 @@ export default function Subtopics() {
             </View>
           </>
         )}
-      </ScrollView>
+            </>
+          ) : (
+            <View className="flex-1 justify-center items-center py-20">
+              <Text className="text-4xl mb-4">📚</Text>
+              <Text className="text-lg font-semibold text-slate-800 mb-2">No subtopics available</Text>
+              <Text className="text-base text-slate-500 text-center">
+                Pull down to refresh and load subtopics
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 }

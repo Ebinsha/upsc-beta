@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { ChartData, Subtopic, Topic } from '../types/topic';
+import { Subtopic } from '@/types/topic';
+import { useState, useEffect } from 'react';
 
 interface UseApiDataOptions {
   endpoint: string;
@@ -32,7 +32,7 @@ export function useApiData<T = any>({
   const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
   const apiKey = process.env.EXPO_PUBLIC_API_KEY;
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     if (!enabled) {
       return;
     }
@@ -53,8 +53,6 @@ export function useApiData<T = any>({
       
       const config: RequestInit = {
         method,
-        mode: 'cors',
-        credentials: 'omit',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -87,37 +85,30 @@ export function useApiData<T = any>({
       let errorMessage = 'An unknown error occurred';
       
       if (err instanceof Error) {
-        if (err.message.includes('NetworkError') || err.message.includes('Failed to fetch')) {
-          errorMessage = 'Network error: Unable to connect to the API server. Please check your internet connection and try again.';
-        } else if (err.message.includes('TypeError: Failed to fetch')) {
-          errorMessage = 'Connection error: The API server is not responding. Please try again later.';
-        } else if (err.message.includes('CORS')) {
-          errorMessage = 'Access error: Please ensure you are using the correct API endpoint and credentials.';
-          console.warn('CORS Issue - Headers:', headers, 'URL:', url);
+        if (err.message.includes('CORS')) {
+          errorMessage = 'CORS error: Server does not allow cross-origin requests. Please contact the API administrator.';
+        } else if (err.message.includes('Failed to fetch')) {
+          errorMessage = 'Network error: Unable to connect to the API server. Please check your internet connection.';
         } else {
           errorMessage = err.message;
         }
       }
       
       setError(errorMessage);
-      console.error('API fetch error:', {
-        error: err,
-        endpoint,
-        method,
-       
-      });
+      console.error('API fetch error:', err);
     } finally {
       setLoading(false);
     }
-  }, [enabled, baseUrl, apiKey, endpoint, method, body, headers]);
+  };
 
   const refetch = () => {
+    setData(null); // Clear existing data to prevent flickering
     fetchData();
   };
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [enabled, endpoint, method, JSON.stringify(body), JSON.stringify(headers), ...dependencies]);
 
   return {
     data,
@@ -129,14 +120,19 @@ export function useApiData<T = any>({
 
 // Specialized hooks for different data types
 export function useTopics() {
-  const { data: rawData, ...rest } = useApiData<Record<string, { subtopic: { number: number } }>>({
+  const { data: rawData, loading, error, refetch } = useApiData<Record<string, { subtopic: { number: number } }>>({
     endpoint: '/high_level_topic',
     method: 'GET'
   });
 
+  // Transform API data to match Topic structure
+  const transformedData = rawData ? transformTopicsData(rawData) : null;
+
   return {
-    ...rest,
-    data: rawData ? transformTopicsData(rawData) : null
+    data: transformedData,
+    loading,
+    error,
+    refetch
   };
 }
 
@@ -189,9 +185,10 @@ export function useSubtopics(topicName: string) {
     dependencies: [topicName]
   });
 
+  console.log(rawData)
   // Transform API data to match Subtopic structure
   const transformedData = rawData ? transformSubtopicsData(rawData, topicName) : null;
-
+console.log(transformedData, "finalsubtopic")
   return {
     data: transformedData,
     loading,
@@ -204,6 +201,8 @@ export function useSubtopics(topicName: string) {
 function transformSubtopicsData(apiData: Record<string, { subtopic: { number: number, ids: Record<string, { name: string, count: number }> } }>, topicName: string): Subtopic[] {
   const subtopicIcons = ['🔬', '📊', '🌐', '⚡', '🎯', '📈', '🔍', '💡', '🛠️', '📋', '🌟', '🚀'];
   
+
+  console.log(apiData, "apidata")
   // Get the first (and likely only) topic data from the response
   const topicData = Object.values(apiData)[0];
   if (!topicData || !topicData.subtopic || !topicData.subtopic.ids) {
@@ -241,6 +240,10 @@ function transformSubtopicsData(apiData: Record<string, { subtopic: { number: nu
     };
   });
 }
+
+
+
+
 export function useChartData(subtopicId: string) {
   return useApiData<ChartData>({
     endpoint: '/line_chart',
