@@ -53,8 +53,9 @@ export function useApiData<T = any>({
       const config: RequestInit = {
         method,
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          'X-API-KEY': apiKey,
           ...headers,
         },
       };
