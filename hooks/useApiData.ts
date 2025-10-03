@@ -198,21 +198,38 @@ console.log(transformedData, "finalsubtopic")
 }
 
 // Helper function to transform API subtopics data to Subtopic structure
-function transformSubtopicsData(apiData: Record<string, { subtopic: { number: number, ids: Record<string, { name: string, count: number }> } }>, topicName: string): Subtopic[] {
+function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
   const subtopicIcons = ['🔬', '📊', '🌐', '⚡', '🎯', '📈', '🔍', '💡', '🛠️', '📋', '🌟', '🚀'];
   
-
-  console.log(apiData, "apidata")
-  // Get the first (and likely only) topic data from the response
-  const topicData = Object.values(apiData)[0];
-  if (!topicData || !topicData.subtopic || !topicData.subtopic.ids) {
+  console.log('Raw API Data:', JSON.stringify(apiData, null, 2));
+  
+  // Handle the API response structure: { "subtopic": { "number": 10, "ids": {...} } }
+  let subtopicData;
+  
+  if (apiData.subtopic) {
+    // Direct structure: { "subtopic": { "ids": {...} } }
+    subtopicData = apiData.subtopic;
+  } else {
+    // Nested structure: { "topicName": { "subtopic": { "ids": {...} } } }
+    const topicData = Object.values(apiData)[0] as any;
+    if (topicData && topicData.subtopic) {
+      subtopicData = topicData.subtopic;
+    }
+  }
+  
+  console.log('Extracted subtopic data:', JSON.stringify(subtopicData, null, 2));
+  
+  if (!subtopicData || !subtopicData.ids) {
+    console.log('No subtopic data or ids found');
     return [];
   }
 
-  const subtopicsIds = topicData.subtopic.ids;
+  const subtopicsIds = subtopicData.ids;
+  console.log('Subtopic IDs:', JSON.stringify(subtopicsIds, null, 2));
   
   return Object.entries(subtopicsIds).map(([id, subtopicData], index) => {
-    const priority = subtopicData.count; // Use count as priority
+    const data = subtopicData as { name: string, count: number };
+    const priority = data.count; // Use count as priority
     const rating = Math.round((Math.random() * 4 + 1) * 10) / 10; // Random 1.0-5.0 with 1 decimal
     const isHot = Math.random() > 0.7; // 30% chance of being hot
     const questionsCount = Math.floor(Math.random() * 150) + 1; // Random 1-150
@@ -229,7 +246,7 @@ function transformSubtopicsData(apiData: Record<string, { subtopic: { number: nu
 
     return {
       id,
-      name: subtopicData.name,
+      name: data.name,
       priority,
       rating,
       isHot,
@@ -240,7 +257,6 @@ function transformSubtopicsData(apiData: Record<string, { subtopic: { number: nu
     };
   });
 }
-
 
 
 
