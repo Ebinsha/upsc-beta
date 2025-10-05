@@ -4,6 +4,7 @@ import { ArrowLeft, Star, Clock, Target, Play, ZoomIn, Calendar } from 'lucide-r
 import { LineChart } from 'react-native-chart-kit';
 import { useState } from 'react';
 import { useChartData } from '@/hooks/useApiData';
+import { PracticeModal } from '@/components/PracticeModal';
 
 const { width } = Dimensions.get('window');
 
@@ -20,6 +21,7 @@ export default function TopicJustify() {
 
   const [selectedTimeRange, setSelectedTimeRange] = useState<'1Y' | '3Y' | '5Y'>('1Y');
   const [chartScrollEnabled, setChartScrollEnabled] = useState(false);
+  const [showPracticeModal, setShowPracticeModal] = useState(false);
 
   // Use the API hook to fetch chart data
   const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(topicName as string);
@@ -310,6 +312,28 @@ export default function TopicJustify() {
           ))}
         </View>
       </ScrollView>
+
+      {/* Floating Practice Button */}
+      <TouchableOpacity
+        className="absolute bottom-6 right-6 w-16 h-16 bg-blue-500 rounded-full items-center justify-center shadow-lg"
+        onPress={() => setShowPracticeModal(true)}
+        style={{
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        }}
+      >
+        <Play size={24} color="#ffffff" />
+      </TouchableOpacity>
+
+      {/* Practice Modal */}
+      <PracticeModal
+        visible={showPracticeModal}
+        onClose={() => setShowPracticeModal(false)}
+        topicName={topicName as string}
+      />
     </View>
   );
 }
