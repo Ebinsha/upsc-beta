@@ -21,6 +21,8 @@ export default function RootLayout() {
             headerShown: false,
           }}
         />
+        <Stack.Screen name="practice-test" />
+        <Stack.Screen name="test-results" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
