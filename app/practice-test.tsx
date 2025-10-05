@@ -121,7 +121,7 @@ export default function PracticeTest() {
     const timeTaken = Math.floor((new Date().getTime() - questionStartTime.getTime()) / 1000);
     const isCorrect = answerIndex === mockQuestions[currentQuestion].correctAnswer;
     
-    console.log('Answer selected:', answerIndex, 'for question:', mockQuestions[currentQuestion].id);
+    console.log('Answer selected:', answerIndex, 'for question:', mockQuestions[currentQuestion].id, 'Current answers:', answers);
     
     setAnswers(prev => prev.map(answer => 
       answer.questionId === mockQuestions[currentQuestion].id

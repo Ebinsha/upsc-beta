@@ -57,7 +57,7 @@ export function MCQCard({
 
   const getOptionIcon = (index: number) => {
     if (!showResult) {
-      return selectedAnswer === index && selectedAnswer !== null ? (
+      return selectedAnswer === index ? (
         <CheckCircle size={20} color="#3b82f6" />
       ) : (
         <Circle size={20} color="#94a3b8" />
