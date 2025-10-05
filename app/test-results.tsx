@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Trophy, Clock, Target, BookOpen, ExternalLink, CheckCircle, XCircle } from 'lucide-react-native';
+import { ArrowLeft, Trophy, Clock, Target, BookOpen, ExternalLink, CircleCheck as CheckCircle, Circle as XCircle } from 'lucide-react-native';
 import { MCQCard } from '@/components/MCQCard';
 import { Question, TestAnswer } from '@/types/test';
 

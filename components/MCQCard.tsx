@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from 'react-native';
-import { CheckCircle, Circle, Clock } from 'lucide-react-native';
+import { CircleCheck as CheckCircle, Circle, Clock } from 'lucide-react-native';
 
 interface MCQCardProps {
   question: string;
