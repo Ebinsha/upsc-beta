@@ -1,8 +1,10 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Calendar, Clock, Play, Star, Target, ZoomIn } from 'lucide-react-native';
-import { useState } from 'react';
-import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
+import { ArrowLeft, Star, Clock, Target, Play, ZoomIn, Calendar } from 'lucide-react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { useState } from 'react';
+import { useChartData } from '@/hooks/useApiData';
+import { PracticeModal } from '@/components/PracticeModal';
 
 const { width } = Dimensions.get('window');
 
@@ -19,6 +21,10 @@ export default function TopicJustify() {
 
   const [selectedTimeRange, setSelectedTimeRange] = useState<'1Y' | '3Y' | '5Y'>('1Y');
   const [chartScrollEnabled, setChartScrollEnabled] = useState(false);
+  const [showPracticeModal, setShowPracticeModal] = useState(false);
+
+  // Use the API hook to fetch chart data
+  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(topicName as string);
 
   // Mock analytics data for 5 years (2019-2024)
   const fullAnalyticsData = {
@@ -45,7 +51,9 @@ export default function TopicJustify() {
     }
   };
 
-  const currentData = fullAnalyticsData[selectedTimeRange];
+  // Use API data if available, otherwise fallback to mock data
+  const currentData = chartApiData || fullAnalyticsData[selectedTimeRange];
+  const currentInsights = chartApiData?.insights || [];
 
   const recommendations = [
     {
@@ -81,14 +89,7 @@ export default function TopicJustify() {
     <View className="flex-1 bg-slate-50">
       <View className="pt-16 px-5 pb-6" style={{ backgroundColor: topicColor as string }}>
         <TouchableOpacity
-          onPress={() => {
-            try {
-              router.back();
-            } catch (error) {
-              // Fallback for when router.back() fails
-              router.replace('/');
-            }
-          }}
+          onPress={() => router.back()}
           className="w-10 h-10 rounded-full bg-white/90 items-center justify-center mb-4"
         >
           <ArrowLeft size={24} color="#1e293b" />
@@ -165,6 +166,19 @@ export default function TopicJustify() {
             showsHorizontalScrollIndicator={false}
             className="rounded-xl"
           >
+            {chartLoading && (
+              <View className="items-center justify-center h-52">
+                <Text className="text-sm text-slate-500">Loading chart data...</Text>
+              </View>
+            )}
+            
+            {chartError && (
+              <View className="items-center justify-center h-52">
+                <Text className="text-sm text-red-500">Error loading chart: {chartError}</Text>
+              </View>
+            )}
+            
+            {!chartLoading && !chartError && (
             <LineChart
               data={currentData}
               width={chartScrollEnabled && selectedTimeRange === '5Y' ? width * 1.5 : width - 40}
@@ -199,6 +213,7 @@ export default function TopicJustify() {
               withHorizontalLabels={true}
               fromZero={true}
             />
+            )}
           </ScrollView>
           
           {chartScrollEnabled && selectedTimeRange === '5Y' && (
@@ -211,6 +226,15 @@ export default function TopicJustify() {
           <View className="mt-4 p-3 bg-slate-50 rounded-xl">
             <Text className="text-sm font-semibold text-slate-800 mb-2">Key Insights:</Text>
             <View className="gap-1">
+              {currentInsights.length > 0 ? (
+                currentInsights.map((insight, index) => (
+                  <Text key={index} className="text-xs text-slate-600">
+                    • {insight.description}
+                    {insight.percentage && ` (${insight.percentage}%)`}
+                  </Text>
+                ))
+              ) : (
+                <>
               {selectedTimeRange === '5Y' && (
                 <>
                   <Text className="text-xs text-slate-600">• 463% growth over 5 years (8 → 45 questions)</Text>
@@ -228,6 +252,8 @@ export default function TopicJustify() {
                 <>
                   <Text className="text-xs text-slate-600">• Steady quarterly growth this year</Text>
                   <Text className="text-xs text-slate-600">• Q4 shows highest question frequency</Text>
+                </>
+              )}
                 </>
               )}
             </View>
@@ -286,6 +312,28 @@ export default function TopicJustify() {
           ))}
         </View>
       </ScrollView>
+
+      {/* Floating Practice Button */}
+      <TouchableOpacity
+        className="absolute bottom-6 right-6 w-16 h-16 bg-blue-500 rounded-full items-center justify-center shadow-lg"
+        onPress={() => setShowPracticeModal(true)}
+        style={{
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        }}
+      >
+        <Play size={24} color="#ffffff" />
+      </TouchableOpacity>
+
+      {/* Practice Modal */}
+      <PracticeModal
+        visible={showPracticeModal}
+        onClose={() => setShowPracticeModal(false)}
+        topicName={topicName as string}
+      />
     </View>
   );
 }
