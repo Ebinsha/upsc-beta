@@ -16,6 +16,8 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="subtopics" />
         <Stack.Screen name="topic-justify" />
+        <Stack.Screen name="practice-test" />
+        <Stack.Screen name="test-results" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

@@ -1,5 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { Clock, Trophy, BookOpen, TrendingUp } from 'lucide-react-native';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -58,7 +59,22 @@ export default function Tests() {
         <Text className="text-xl font-bold text-slate-800 mb-4">Available Tests</Text>
         
         {practiceTests.map((test) => (
-          <TouchableOpacity key={test.id} className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
+          <TouchableOpacity 
+            key={test.id} 
+            className="bg-white rounded-2xl p-5 mb-4 shadow-sm"
+            onPress={() => {
+              router.push({
+                pathname: '/practice-test',
+                params: {
+                  testId: test.id,
+                  testTitle: test.title,
+                  duration: test.duration.toString(),
+                  difficulty: test.difficulty,
+                  questionsCount: test.questions.toString()
+                }
+              });
+            }}
+          >
             <View className="flex-row items-center mb-3 gap-3">
               <BookOpen size={20} color="#3b82f6" />
               <Text className="text-lg font-bold text-slate-800 flex-1">{test.title}</Text>
@@ -86,7 +102,7 @@ export default function Tests() {
               </View>
             )}
             
-            <TouchableOpacity className={`py-3 rounded-xl items-center ${
+            <View className={`py-3 rounded-xl items-center ${
               test.completed 
                 ? 'bg-slate-100 border border-blue-500' 
                 : 'bg-blue-500'
@@ -96,7 +112,7 @@ export default function Tests() {
               }`}>
                 {test.completed ? 'Retake Test' : 'Start Test'}
               </Text>
-            </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
