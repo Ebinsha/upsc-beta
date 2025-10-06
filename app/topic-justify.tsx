@@ -189,8 +189,7 @@ export default function TopicJustify() {
               withHorizontalLabels={true}
               fromZero={true}
             />
-            )}
-            )}
+            ))}
             
             {!chartLoading && !chartError && !currentData && (
               <View className="items-center justify-center h-52">
