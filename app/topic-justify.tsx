@@ -24,35 +24,10 @@ export default function TopicJustify() {
   const [showPracticeModal, setShowPracticeModal] = useState(false);
 
   // Use the API hook to fetch chart data
-  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(topicName as string);
+  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(params.topicId as string);
 
-  // Mock analytics data for 5 years (2019-2024)
-  const fullAnalyticsData = {
-    '5Y': {
-      labels: ['2019', '2020', '2021', '2022', '2023', '2024'],
-      datasets: [{
-        data: [8, 12, 18, 25, 32, 45],
-        strokeWidth: 3,
-      }]
-    },
-    '3Y': {
-      labels: ['2022', '2023', '2024'],
-      datasets: [{
-        data: [25, 32, 45],
-        strokeWidth: 3,
-      }]
-    },
-    '1Y': {
-      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-      datasets: [{
-        data: [38, 42, 45, 48],
-        strokeWidth: 3,
-      }]
-    }
-  };
-
-  // Use API data if available, otherwise fallback to mock data
-  const currentData = chartApiData || fullAnalyticsData[selectedTimeRange];
+  // Use API data directly
+  const currentData = chartApiData;
   const currentInsights = chartApiData?.insights || [];
 
   const recommendations = [
@@ -179,6 +154,7 @@ export default function TopicJustify() {
             )}
             
             {!chartLoading && !chartError && (
+            currentData && (
             <LineChart
               data={currentData}
               width={chartScrollEnabled && selectedTimeRange === '5Y' ? width * 1.5 : width - 40}
@@ -214,6 +190,13 @@ export default function TopicJustify() {
               fromZero={true}
             />
             )}
+            )}
+            
+            {!chartLoading && !chartError && !currentData && (
+              <View className="items-center justify-center h-52">
+                <Text className="text-sm text-slate-500">No chart data available</Text>
+              </View>
+            )}
           </ScrollView>
           
           {chartScrollEnabled && selectedTimeRange === '5Y' && (
@@ -226,7 +209,7 @@ export default function TopicJustify() {
           <View className="mt-4 p-3 bg-slate-50 rounded-xl">
             <Text className="text-sm font-semibold text-slate-800 mb-2">Key Insights:</Text>
             <View className="gap-1">
-              {currentInsights.length > 0 ? (
+              {currentInsights && currentInsights.length > 0 ? (
                 currentInsights.map((insight, index) => (
                   <Text key={index} className="text-xs text-slate-600">
                     • {insight.description}
@@ -234,27 +217,7 @@ export default function TopicJustify() {
                   </Text>
                 ))
               ) : (
-                <>
-              {selectedTimeRange === '5Y' && (
-                <>
-                  <Text className="text-xs text-slate-600">• 463% growth over 5 years (8 → 45 questions)</Text>
-                  <Text className="text-xs text-slate-600">• Steepest growth in 2021-2022 period</Text>
-                  <Text className="text-xs text-slate-600">• Consistent upward trend indicates high relevance</Text>
-                </>
-              )}
-              {selectedTimeRange === '3Y' && (
-                <>
-                  <Text className="text-xs text-slate-600">• 80% increase in recent 3 years</Text>
-                  <Text className="text-xs text-slate-600">• Accelerating trend in exam frequency</Text>
-                </>
-              )}
-              {selectedTimeRange === '1Y' && (
-                <>
-                  <Text className="text-xs text-slate-600">• Steady quarterly growth this year</Text>
-                  <Text className="text-xs text-slate-600">• Q4 shows highest question frequency</Text>
-                </>
-              )}
-                </>
+                <Text className="text-xs text-slate-600">• No insights available for this topic</Text>
               )}
             </View>
           </View>
