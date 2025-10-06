@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity } from 'react-native';
 import { CircleCheck as CheckCircle, Circle, Clock } from 'lucide-react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 interface MCQCardProps {
   question: string;
@@ -23,10 +23,15 @@ export function MCQCard({
   disabled = false,
   questionNumber,
   totalQuestions,
-}: MCQCardProps) {
+}: MCQCardProps)
+ {
+  const isSelected = (index: number) => {
+    return selectedAnswer !== null && selectedAnswer === index;
+  };
+
   const getOptionStyle = (index: number) => {
     if (!showResult) {
-      return selectedAnswer === index
+      return isSelected(index)
         ? 'bg-blue-100 border-blue-500'
         : 'bg-white border-slate-200';
     }
@@ -43,7 +48,7 @@ export function MCQCard({
 
   const getOptionTextStyle = (index: number) => {
     if (!showResult) {
-      return selectedAnswer === index ? 'text-blue-800' : 'text-slate-800';
+      return isSelected(index) ? 'text-blue-800' : 'text-slate-800';
     }
 
     if (index === correctAnswer) {
@@ -57,7 +62,7 @@ export function MCQCard({
 
   const getOptionIcon = (index: number) => {
     if (!showResult) {
-      return selectedAnswer === index ? (
+      return isSelected(index) ? (
         <CheckCircle size={20} color="#3b82f6" />
       ) : (
         <Circle size={20} color="#94a3b8" />
@@ -72,6 +77,8 @@ export function MCQCard({
     }
     return <Circle size={20} color="#94a3b8" />;
   };
+
+
 
   return (
     <View className="bg-white rounded-2xl p-6 shadow-sm">
@@ -99,7 +106,13 @@ export function MCQCard({
           <TouchableOpacity
             key={index}
             className={`p-4 rounded-xl border-2 flex-row items-center gap-3 ${getOptionStyle(index)}`}
-            onPress={() => !disabled && onSelectAnswer(index)}
+            onPress={() => {
+              console.log('Option pressed:', index);
+              console.log('Current selectedAnswer:', selectedAnswer);
+              if (!disabled) {
+                onSelectAnswer(index);
+              }
+            }}
             disabled={disabled}
           >
             {getOptionIcon(index)}
