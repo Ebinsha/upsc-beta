@@ -1,5 +1,5 @@
-import { Subtopic } from '@/types/topic';
-import { useEffect, useState } from 'react';
+import { ChartData } from '@/types/api';
+import { useState, useEffect } from 'react';
 
 interface UseApiDataOptions {
   endpoint: string;
@@ -8,6 +8,7 @@ interface UseApiDataOptions {
   headers?: Record<string, string>;
   enabled?: boolean;
   dependencies?: any[];
+  useBodyForGet?: boolean; // New option to allow body in GET requests
 }
 
 interface UseApiDataReturn<T> {
@@ -23,7 +24,8 @@ export function useApiData<T = any>({
   body,
   headers = {},
   enabled = true,
-  dependencies = []
+  dependencies = [],
+  useBodyForGet = false
 }: UseApiDataOptions): UseApiDataReturn<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -61,7 +63,7 @@ export function useApiData<T = any>({
         },
       };
 
-      if (body && (method === 'POST' || method === 'PUT')) {
+      if (body && (method === 'POST' || method === 'PUT' || (method === 'GET' && useBodyForGet))) {
         config.body = JSON.stringify(body);
       }
 
@@ -178,17 +180,22 @@ export function useSubtopics(topicName: string) {
   // Convert topic name to lowercase endpoint (e.g., "Environment" -> "/environment")
   const endpoint = `/${topicName.toLowerCase()}`;
   
-  const { data: rawData, loading, error, refetch } = useApiData<Record<string, { subtopic: { number: number, ids: Record<string, { name: string, count: number }> } }>>({
+  console.log('Fetching subtopics for:', topicName, 'Endpoint:', endpoint);
+  
+  const { data: rawData, loading, error, refetch } = useApiData<any>({
     endpoint,
     method: 'GET',
     enabled: !!topicName,
     dependencies: [topicName]
   });
 
-  console.log(rawData)
+  console.log('Raw subtopic data received:', rawData);
+
   // Transform API data to match Subtopic structure
   const transformedData = rawData ? transformSubtopicsData(rawData, topicName) : null;
-console.log(transformedData, "finalsubtopic")
+  
+  console.log('Transformed subtopic data:', transformedData);
+
   return {
     data: transformedData,
     loading,
@@ -257,18 +264,15 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
     };
   });
 }
-
-
-
 export function useChartData(subtopicId: string) {
   return useApiData<ChartData>({
     endpoint: '/line_chart',
-    method: 'POST',
+    method: 'GET',
     body: {
-  
-      "topic_title": subtopicId, // actually subtopic id to be  passed for chart
-		  "topic_subtopic":"0.0"
+      topic_title: subtopicId,
+      topic_subtopic: "0.0"
     },
+    useBodyForGet: true,
     enabled: !!subtopicId,
     dependencies: [subtopicId]
   });

@@ -24,35 +24,11 @@ export default function TopicJustify() {
   const [showPracticeModal, setShowPracticeModal] = useState(false);
 
   // Use the API hook to fetch chart data
-  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(topicName as string);
+  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(params.topicId as string);
 
-  // Mock analytics data for 5 years (2019-2024)
-  const fullAnalyticsData = {
-    '5Y': {
-      labels: ['2019', '2020', '2021', '2022', '2023', '2024'],
-      datasets: [{
-        data: [8, 12, 18, 25, 32, 45],
-        strokeWidth: 3,
-      }]
-    },
-    '3Y': {
-      labels: ['2022', '2023', '2024'],
-      datasets: [{
-        data: [25, 32, 45],
-        strokeWidth: 3,
-      }]
-    },
-    '1Y': {
-      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-      datasets: [{
-        data: [38, 42, 45, 48],
-        strokeWidth: 3,
-      }]
-    }
-  };
-
-  // Use API data if available, otherwise fallback to mock data
-  const currentData = chartApiData || fullAnalyticsData[selectedTimeRange];
+  console.log({ chartApiData });
+  // Use API data directly
+  const currentData = chartApiData;
   const currentInsights = chartApiData?.insights || [];
 
   const recommendations = [
@@ -179,6 +155,7 @@ export default function TopicJustify() {
             )}
             
             {!chartLoading && !chartError && (
+            currentData && (
             <LineChart
               data={currentData}
               width={chartScrollEnabled && selectedTimeRange === '5Y' ? width * 1.5 : width - 40}
@@ -213,6 +190,12 @@ export default function TopicJustify() {
               withHorizontalLabels={true}
               fromZero={true}
             />
+            ))}
+            
+            {!chartLoading && !chartError && !currentData && (
+              <View className="items-center justify-center h-52">
+                <Text className="text-sm text-slate-500">No chart data available</Text>
+              </View>
             )}
           </ScrollView>
           
