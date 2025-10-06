@@ -7,6 +7,7 @@ interface UseApiDataOptions {
   headers?: Record<string, string>;
   enabled?: boolean;
   dependencies?: any[];
+  useBodyForGet?: boolean; // New option to allow body in GET requests
 }
 
 interface UseApiDataReturn<T> {
@@ -22,7 +23,8 @@ export function useApiData<T = any>({
   body,
   headers = {},
   enabled = true,
-  dependencies = []
+  dependencies = [],
+  useBodyForGet = false
 }: UseApiDataOptions): UseApiDataReturn<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -60,7 +62,7 @@ export function useApiData<T = any>({
         },
       };
 
-      if (body && (method === 'POST' || method === 'PUT')) {
+      if (body && (method === 'POST' || method === 'PUT' || (method === 'GET' && useBodyForGet))) {
         config.body = JSON.stringify(body);
       }
 
@@ -264,10 +266,12 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
 export function useChartData(subtopicId: string) {
   return useApiData<ChartData>({
     endpoint: '/line_chart',
-    method: 'POST',
+    method: 'GET',
     body: {
-      subtopic_id: subtopicId
+      topic_title: subtopicId,
+      topic_subtopic: "0.0"
     },
+    useBodyForGet: true,
     enabled: !!subtopicId,
     dependencies: [subtopicId]
   });
