@@ -265,7 +265,9 @@ export function useChartData(subtopicId: string) {
     endpoint: '/line_chart',
     method: 'POST',
     body: {
-      subtopic_id: subtopicId
+  
+      "topic_title": subtopicId, // actually subtopic id to be  passed for chart
+		  "topic_subtopic":"0.0"
     },
     enabled: !!subtopicId,
     dependencies: [subtopicId]
