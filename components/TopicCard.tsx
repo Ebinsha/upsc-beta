@@ -7,7 +7,7 @@ interface TopicCardProps {
   name: string;
   priority: number;
   rating: number;
-  isHot: boolean;
+  // isHot: boolean;
   icon: string;
   color: string;
   width: number;
@@ -20,7 +20,7 @@ interface TopicCardProps {
 export function TopicCard({
   name,
   rating,
-  isHot,
+  // isHot,
   icon,
   color,
   width,
@@ -43,11 +43,11 @@ export function TopicCard({
         {/* Top Section */}
         <View className="flex-row justify-between items-start">
           <Text className="text-2xl">{icon}</Text>
-          {isHot && (
+          {/* {isHot && (
             <View className="bg-red-500 rounded-xl p-1">
               <Flame size={12} color="#ffffff" />
             </View>
-          )}
+          )} */}
         </View>
         
         {/* Middle Section - Topic Name */}
