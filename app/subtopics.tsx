@@ -1,58 +1,34 @@
+
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Search, Package, ChevronRight, Flame } from 'lucide-react-native';
+import { ArrowLeft, Search, Flame, Target, BookOpen, Play } from 'lucide-react-native';
 import { useState } from 'react';
-import { TopicCard } from '@/components/TopicCard';
+import { SubtopicGroup } from '@/components/SubtopicGroup';
 import { useSubtopics } from '@/hooks/useApiData';
-import { Subtopic } from '@types/topic';
+import { Subtopic } from '@/types/api';
+import { PracticeModal } from '@/components/PracticeModal';
 
 const { width } = Dimensions.get('window');
-
-interface GroupedSubtopic {
-  id: string;
-  name: string;
-  count: number;
-  subtopics: Subtopic[];
-  avgPriority: number;
-  color: string;
-}
-
 
 export default function Subtopics() {
   const params = useLocalSearchParams();
   const { topicId, topicName, topicColor } = params;
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [showPracticeModal, setShowPracticeModal] = useState(false);
   
   // Use the API hook to fetch subtopics
   const { data: subtopics, loading, error, refetch } = useSubtopics(topicName as string);
   
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    try {
+      await refetch();
+    } catch (error) {
+      console.error('Refresh error:', error);
+    }
     setRefreshing(false);
   };
-
-  console.log(subtopics , topicName);
-
-  // Helper functions - moved before usage
-  const getSubtopicColor = (index: number, baseColor: string) => {
-    const colors = [
-      '#F5A3A3', '#A3C3F5', '#7DB8E8', '#E67E22', '#C39BD3', '#85C1E9',
-      '#F8C471', '#82E0AA', '#D7BDE2', '#F9E79F', '#AED6F1', '#A9DFBF',
-      '#F5B7B1', '#D5A6BD', '#A3E4D7', '#F4D03F', '#85C1E9', '#D2B4DE'
-    ];
-    return colors[index % colors.length];
-  };
-
-  const getCardSize = (priority: number, isGrouped: boolean = false) => {
-    if (isGrouped) return { width: width - 40, height: 100 };
-    if (priority >= 8) return { width: width - 40, height: 140 };
-    if (priority >= 6) return { width: (width - 52) / 2, height: 120 };
-    if (priority >= 4) return { width: (width - 52) / 2, height: 100 };
-    return { width: (width - 52) / 2, height: 80 };
-  };
-
 
   const handleSubtopicPress = (subtopic: Subtopic) => {
     router.push({
@@ -69,57 +45,22 @@ export default function Subtopics() {
     });
   };
 
-  const handleGroupPress = (group: GroupedSubtopic) => {
-    console.log('Group pressed:', group.name, 'Topics:', group.subtopics.length);
-  };
-
-  // Group subtopics by priority
+  // Group subtopics by hot topics and priority
   const groupSubtopics = (subtopicsData: Subtopic[]) => {
-    const highPriority = subtopicsData.filter(s => s.priority >= 6);
-    const mediumPriority = subtopicsData.filter(s => s.priority >= 4 && s.priority < 6);
-    const lowPriority = subtopicsData.filter(s => s.priority < 4);
+    const hotTopics = subtopicsData.filter(s => s.isHot);
+    const highPriority = subtopicsData.filter(s => !s.isHot && s.priority >= 7);
+    const mediumPriority = subtopicsData.filter(s => !s.isHot && s.priority >= 4 && s.priority < 7);
+    const lowPriority = subtopicsData.filter(s => !s.isHot && s.priority < 4);
 
-    // Group low priority by priority level
-    const grouped: GroupedSubtopic[] = [];
-    const priorityGroups: Record<number, Subtopic[]> = {};
-
-    lowPriority.forEach(subtopic => {
-      if (!priorityGroups[subtopic.priority]) {
-        priorityGroups[subtopic.priority] = [];
-      }
-      priorityGroups[subtopic.priority].push(subtopic);
-    });
-
-    Object.entries(priorityGroups).forEach(([priority, items]) => {
-      const priorityNum = parseInt(priority);
-      grouped.push({
-        id: `group-${priority}`,
-        name: `Priority ${priority} Topics`,
-        count: items.length,
-        subtopics: items,
-        avgPriority: priorityNum,
-        color: getSubtopicColor(priorityNum + 3, topicColor as string) // Offset for better colors
-      });
-    });
-
-    return { highPriority, mediumPriority, grouped };
+    return { hotTopics, highPriority, mediumPriority, lowPriority };
   };
 
-  // Only group subtopics if we have data
-  const { highPriority, mediumPriority, grouped } = subtopics ? groupSubtopics(subtopics) : { highPriority: [], mediumPriority: [], grouped: [] };
-
-  const filteredHighPriority = highPriority.filter(subtopic =>
+  // Filter and group subtopics
+  const filteredSubtopics = subtopics?.filter(subtopic =>
     subtopic.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) || [];
 
-  const filteredMediumPriority = mediumPriority.filter(subtopic =>
-    subtopic.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredGroups = grouped.filter(group =>
-    group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    group.subtopics.some(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const { hotTopics, highPriority, mediumPriority, lowPriority } = groupSubtopics(filteredSubtopics);
 
   return (
     <View className="flex-1 bg-slate-50">
@@ -133,9 +74,19 @@ export default function Subtopics() {
         
         <View className="gap-2 mb-5">
           <Text className="text-3xl font-bold text-slate-800">{topicName}</Text>
-          <Text className="text-base text-slate-600">
-            {subtopics ? subtopics.length : 0} subtopics • {highPriority.length} high priority • {mediumPriority.length} medium priority
-          </Text>
+          <View className="flex-row items-center gap-4">
+            <Text className="text-sm text-slate-600">
+              {subtopics ? subtopics.length : 0} subtopics
+            </Text>
+            {hotTopics.length > 0 && (
+              <View className="flex-row items-center gap-1">
+                <Flame size={14} color="#ef4444" />
+                <Text className="text-sm text-red-600 font-medium">
+                  {hotTopics.length} trending
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
         
         <View className="flex-row items-center bg-white/90 rounded-xl px-4 py-3 gap-3">
@@ -184,119 +135,55 @@ export default function Subtopics() {
         >
           {subtopics && subtopics.length > 0 ? (
             <>
-        {/* High Priority Section */}
-        {filteredHighPriority.length > 0 && (
-          <>
-            <Text className="text-xl font-bold text-slate-800 mb-4">🔥 High Priority Topics</Text>
-            
-            <View className="flex-row flex-wrap gap-3 mb-6">
-              {filteredHighPriority
-                .sort((a, b) => b.priority - a.priority)
-                .map((subtopic, index) => {
-                  const cardSize = getCardSize(subtopic.priority);
-                  const cardColor = getSubtopicColor(index, topicColor as string);
-                  
-                  return (
-                    <TopicCard
-                      key={subtopic.id}
-                      id={subtopic.id}
-                      name={subtopic.name}
-                      priority={subtopic.priority}
-                      rating={subtopic.rating}
-                      isHot={subtopic.isHot}
-                      icon={subtopic.icon}
-                      color={cardColor}
-                      width={cardSize.width}
-                      height={cardSize.height}
-                      bottomLeftText=""
-                      bottomRightText={[`${subtopic.questionsCount} Questions`, subtopic.difficulty]}
-                      onPress={() => handleSubtopicPress(subtopic)}
-                    />
-                  );
-                })}
-            </View>
-          </>
-        )}
+              {/* Hot Topics Section */}
+              {hotTopics.length > 0 && (
+                <SubtopicGroup
+                  title="🔥 Trending Topics"
+                  subtitle={`${hotTopics.length} hot topics • High exam frequency`}
+                  subtopics={hotTopics.sort((a, b) => b.priority - a.priority)}
+                  color="#FEE2E2"
+                  icon={Flame}
+                  onSubtopicPress={handleSubtopicPress}
+                  defaultExpanded={true}
+                />
+              )}
 
-        {/* Medium Priority Section */}
-        {filteredMediumPriority.length > 0 && (
-          <>
-            <Text className="text-xl font-bold text-slate-800 mb-4">📚 Medium Priority Topics</Text>
-            
-            <View className="flex-row flex-wrap gap-3 mb-6">
-              {filteredMediumPriority
-                .sort((a, b) => b.priority - a.priority)
-                .map((subtopic, index) => {
-                  const cardSize = getCardSize(subtopic.priority);
-                  const cardColor = getSubtopicColor(index + 6, topicColor as string); // Offset for different shades
-                  
-                  return (
-                    <TopicCard
-                      key={subtopic.id}
-                      id={subtopic.id}
-                      name={subtopic.name}
-                      priority={subtopic.priority}
-                      rating={subtopic.rating}
-                      isHot={subtopic.isHot}
-                      icon={subtopic.icon}
-                      color={cardColor}
-                      width={cardSize.width}
-                      height={cardSize.height}
-                      bottomLeftText=""
-                      bottomRightText={[`${subtopic.questionsCount} Questions`, subtopic.difficulty]}
-                      onPress={() => handleSubtopicPress(subtopic)}
-                    />
-                  );
-                })}
-            </View>
-          </>
-        )}
+              {/* High Priority Section */}
+              {highPriority.length > 0 && (
+                <SubtopicGroup
+                  title="🎯 High Priority"
+                  subtitle={`${highPriority.length} topics • Priority 7+ • Focus areas`}
+                  subtopics={highPriority.sort((a, b) => b.priority - a.priority)}
+                  color="#DBEAFE"
+                  icon={Target}
+                  onSubtopicPress={handleSubtopicPress}
+                  defaultExpanded={hotTopics.length === 0}
+                />
+              )}
 
-        {/* Grouped Low Priority Section */}
-        {filteredGroups.length > 0 && (
-          <>
-            <Text className="text-xl font-bold text-slate-800 mb-4">📋 Other Topics (Grouped)</Text>
-            
-            <View className="gap-3">
-              {filteredGroups.map((group, index) => {
-                const cardSize = getCardSize(group.avgPriority, true);
-                
-                return (
-                  <TouchableOpacity
-                    key={group.id}
-                    className="rounded-2xl p-5 shadow-sm flex-row items-center justify-between"
-                    style={{
-                      width: cardSize.width,
-                      height: cardSize.height,
-                      backgroundColor: group.color,
-                    }}
-                    onPress={() => handleGroupPress(group)}
-                  >
-                    <View className="flex-row items-center flex-1">
-                      <View className="w-12 h-12 rounded-full bg-white/20 items-center justify-center mr-4">
-                        <Package size={24} color="#64748b" />
-                      </View>
-                      
-                      <View className="flex-1">
-                        <Text className="text-lg font-bold text-slate-800 mb-1" numberOfLines={1}>
-                          {group.name}
-                        </Text>
-                        <Text className="text-sm text-slate-600">
-                          {group.count} topics • Priority Level {group.avgPriority}
-                        </Text>
-                        <Text className="text-xs text-slate-500 mt-1">
-                          Tap to view all topics in this group
-                        </Text>
-                      </View>
-                    </View>
-                    
-                    <ChevronRight size={20} color="#64748b" />
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </>
-        )}
+              {/* Medium Priority Section */}
+              {mediumPriority.length > 0 && (
+                <SubtopicGroup
+                  title="📚 Medium Priority"
+                  subtitle={`${mediumPriority.length} topics • Priority 4-6 • Important concepts`}
+                  subtopics={mediumPriority.sort((a, b) => b.priority - a.priority)}
+                  color="#FEF3C7"
+                  icon={BookOpen}
+                  onSubtopicPress={handleSubtopicPress}
+                />
+              )}
+
+              {/* Low Priority Section */}
+              {lowPriority.length > 0 && (
+                <SubtopicGroup
+                  title="📋 Other Topics"
+                  subtitle={`${lowPriority.length} topics • Priority <4 • Additional coverage`}
+                  subtopics={lowPriority.sort((a, b) => b.priority - a.priority)}
+                  color="#F3F4F6"
+                  icon={BookOpen}
+                  onSubtopicPress={handleSubtopicPress}
+                />
+              )}
             </>
           ) : (
             <View className="flex-1 justify-center items-center py-20">
@@ -309,6 +196,28 @@ export default function Subtopics() {
           )}
         </ScrollView>
       )}
+
+      {/* Floating Practice Button */}
+      <TouchableOpacity
+        className="absolute bottom-6 right-6 w-16 h-16 bg-blue-500 rounded-full items-center justify-center shadow-lg"
+        onPress={() => setShowPracticeModal(true)}
+        style={{
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        }}
+      >
+        <Play size={24} color="#ffffff" />
+      </TouchableOpacity>
+
+      {/* Practice Modal */}
+      <PracticeModal
+        visible={showPracticeModal}
+        onClose={() => setShowPracticeModal(false)}
+        topicName={topicName as string}
+      />
     </View>
   );
 }
