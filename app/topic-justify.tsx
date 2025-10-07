@@ -156,6 +156,13 @@ export default function TopicJustify() {
             
             {!chartLoading && !chartError && (
             currentData && currentData.labels.length > 0 && currentData.labels[0] !== 'No Data' && (
+            (() => {
+              // Calculate dynamic Y-axis configuration
+              const maxValue = Math.max(...currentData.datasets[0].data);
+              const yAxisMax = maxValue === 0 ? 5 : Math.ceil(maxValue * 1.2); // Add 20% padding
+              const yAxisInterval = maxValue <= 5 ? 1 : Math.ceil(maxValue / 5);
+              
+              return (
             <LineChart
               data={currentData}
               width={isZoomed ? width * 1.8 : width - 40}
@@ -198,8 +205,12 @@ export default function TopicJustify() {
               fromZero={true}
               withInnerLines={true}
               withOuterLines={true}
-              yAxisInterval={1}
+              yAxisInterval={yAxisInterval}
+              yAxisSuffix=""
+              segments={Math.min(5, yAxisMax)}
             />
+            );
+            })()
             ))}
             
             {!chartLoading && !chartError && (!currentData || currentData.labels[0] === 'No Data') && (
