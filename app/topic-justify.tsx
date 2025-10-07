@@ -159,8 +159,31 @@ export default function TopicJustify() {
             (() => {
               // Calculate dynamic Y-axis configuration
               const maxValue = Math.max(...currentData.datasets[0].data);
-              const yAxisMax = maxValue === 0 ? 5 : Math.ceil(maxValue * 1.2); // Add 20% padding
-              const yAxisInterval = maxValue <= 5 ? 1 : Math.ceil(maxValue / 5);
+              
+              // Smart Y-axis scaling based on max value
+              let yAxisMax, yAxisInterval, segments;
+              
+              if (maxValue === 0) {
+                yAxisMax = 5;
+                yAxisInterval = 1;
+                segments = 5;
+              } else if (maxValue === 1) {
+                yAxisMax = 1;
+                yAxisInterval = 1;
+                segments = 1;
+              } else if (maxValue <= 5) {
+                yAxisMax = maxValue;
+                yAxisInterval = 1;
+                segments = maxValue;
+              } else if (maxValue <= 10) {
+                yAxisMax = Math.ceil(maxValue * 1.1);
+                yAxisInterval = Math.ceil(yAxisMax / 5);
+                segments = 5;
+              } else {
+                yAxisMax = Math.ceil(maxValue * 1.2);
+                yAxisInterval = Math.ceil(yAxisMax / 5);
+                segments = 5;
+              }
               
               return (
             <LineChart
@@ -207,7 +230,7 @@ export default function TopicJustify() {
               withOuterLines={true}
               yAxisInterval={yAxisInterval}
               yAxisSuffix=""
-              segments={Math.min(5, yAxisMax)}
+              segments={segments}
             />
             );
             })()
