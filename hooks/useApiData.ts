@@ -263,7 +263,7 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
     };
   });
 }
-export function useChartData(subtopicId: string) {
+export function useChartData(subtopicId: string, timeRange?: '1Y' | '3Y' | '5Y') {
   const { data: rawData, loading, error, refetch } = useApiData<any>({
     endpoint: '/line_chart',
     method: 'POST',
@@ -272,11 +272,11 @@ export function useChartData(subtopicId: string) {
       topic_subtopic: "0.0"
     },
     enabled: !!subtopicId,
-    dependencies: [subtopicId]
+    dependencies: [subtopicId, timeRange]
   });
 
   // Transform API data to chart format
-  const transformedData = rawData ? transformChartData(rawData, subtopicId) : null;
+  const transformedData = rawData ? transformChartData(rawData, subtopicId, timeRange) : null;
 
   return {
     data: transformedData,
@@ -286,8 +286,8 @@ export function useChartData(subtopicId: string) {
   };
 }
 
-// Helper function to transform API chart data
-function transformChartData(apiData: any, subtopicId: string): ChartData {
+// Helper function to transform API chart data with time range
+function transformChartData(apiData: any, subtopicId: string, timeRange?: '1Y' | '3Y' | '5Y'): ChartData {
   console.log('Raw chart API data:', JSON.stringify(apiData, null, 2));
   
   if (!apiData.range) {
@@ -304,16 +304,16 @@ function transformChartData(apiData: any, subtopicId: string): ChartData {
     const firstSubtopicId = Object.keys(apiData.range)[0];
     if (firstSubtopicId) {
       console.log(`Using data from first available subtopic: ${firstSubtopicId}`);
-      return processSubtopicData(apiData.range[firstSubtopicId]);
+      return processSubtopicData(apiData.range[firstSubtopicId], timeRange);
     }
     return createEmptyChartData();
   }
 
-  return processSubtopicData(subtopicData);
+  return processSubtopicData(subtopicData, timeRange);
 }
 
-// Process individual subtopic data
-function processSubtopicData(subtopicData: Record<string, number>): ChartData {
+// Process individual subtopic data with time range filtering
+function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '1Y' | '3Y' | '5Y'): ChartData {
   const entries = Object.entries(subtopicData);
   
   // Sort by date
@@ -323,14 +323,56 @@ function processSubtopicData(subtopicData: Record<string, number>): ChartData {
     return dateA.getTime() - dateB.getTime();
   });
 
-  const labels = entries.map(([date]) => {
+  // Filter data based on time range
+  let filteredEntries = entries;
+  if (timeRange) {
+    const now = new Date();
+    const cutoffDate = new Date();
+    
+    switch (timeRange) {
+      case '1Y':
+        cutoffDate.setFullYear(now.getFullYear() - 1);
+        break;
+      case '3Y':
+        cutoffDate.setFullYear(now.getFullYear() - 3);
+        break;
+      case '5Y':
+        cutoffDate.setFullYear(now.getFullYear() - 5);
+        break;
+    }
+    
+    filteredEntries = entries.filter(([date]) => {
+      const entryDate = new Date(date + '-01');
+      return entryDate >= cutoffDate;
+    });
+  }
+
+  // Create labels with better formatting for different time ranges
+  const labels = filteredEntries.map(([date], index, array) => {
     const [year, month] = date.split('-');
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
+    
+    // For better readability, show fewer labels on longer time ranges
+    if (timeRange === '5Y' && array.length > 20) {
+      // Show every 6th month for 5-year view
+      if (index % 6 === 0 || index === array.length - 1) {
+        return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
+      }
+      return '';
+    } else if (timeRange === '3Y' && array.length > 12) {
+      // Show every 3rd month for 3-year view
+      if (index % 3 === 0 || index === array.length - 1) {
+        return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
+      }
+      return '';
+    } else {
+      // Show all labels for 1-year view or shorter datasets
+      return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
+    }
   });
 
-  const data = entries.map(([, value]) => value);
+  const data = filteredEntries.map(([, value]) => value);
   
   // Calculate insights
   const totalQuestions = data.reduce((sum, val) => sum + val, 0);
@@ -344,18 +386,20 @@ function processSubtopicData(subtopicData: Record<string, number>): ChartData {
   if (totalQuestions > 0) {
     insights.push({
       title: 'Total Questions',
-      description: `${totalQuestions} questions appeared across all time periods`,
+      description: `${totalQuestions} questions appeared in the selected time range`,
       percentage: totalQuestions
     });
   }
 
   if (maxValue > 0) {
     const maxIndex = data.indexOf(maxValue);
-    insights.push({
-      title: 'Peak Activity',
-      description: `Highest activity in ${labels[maxIndex]} with ${maxValue} questions`,
-      percentage: Math.round((maxValue / totalQuestions) * 100)
-    });
+    if (labels[maxIndex]) {
+      insights.push({
+        title: 'Peak Activity',
+        description: `Highest activity in ${labels[maxIndex]} with ${maxValue} questions`,
+        percentage: Math.round((maxValue / totalQuestions) * 100)
+      });
+    }
   }
 
   if (nonZeroMonths > 0) {
@@ -383,7 +427,7 @@ function processSubtopicData(subtopicData: Record<string, number>): ChartData {
       strokeWidth: 3,
       color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`
     }],
-    timeRange: `${labels[0]} - ${labels[labels.length - 1]}`,
+    timeRange: `${filteredEntries[0]?.[0]} - ${filteredEntries[filteredEntries.length - 1]?.[0]}`,
     insights
   };
 }
