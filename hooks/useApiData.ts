@@ -326,25 +326,47 @@ function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '
   // Filter data based on time range
   let filteredEntries = entries;
   if (timeRange) {
-    const now = new Date();
+    // Get the last available year from the API data
+    const lastEntry = entries[entries.length - 1];
+    const lastAvailableDate = new Date(lastEntry[0] + '-01');
+    const lastAvailableYear = lastAvailableDate.getFullYear();
+    
     const cutoffDate = new Date();
     
     switch (timeRange) {
       case '1Y':
-        cutoffDate.setFullYear(now.getFullYear() - 1);
+        // Show data from the last available year only
+        cutoffDate.setFullYear(lastAvailableYear - 1);
+        cutoffDate.setMonth(11); // December of previous year
         break;
       case '3Y':
-        cutoffDate.setFullYear(now.getFullYear() - 3);
+        // Show data from last 3 years based on last available year
+        cutoffDate.setFullYear(lastAvailableYear - 3);
+        cutoffDate.setMonth(11); // December of 3 years ago
         break;
       case '5Y':
-        cutoffDate.setFullYear(now.getFullYear() - 5);
+        // Show data from last 5 years based on last available year
+        cutoffDate.setFullYear(lastAvailableYear - 5);
+        cutoffDate.setMonth(11); // December of 5 years ago
         break;
     }
     
     filteredEntries = entries.filter(([date]) => {
       const entryDate = new Date(date + '-01');
-      return entryDate >= cutoffDate;
+      return entryDate > cutoffDate;
     });
+    
+    // If no data after filtering, show at least the last year of available data
+    if (filteredEntries.length === 0) {
+      const lastYearStart = new Date();
+      lastYearStart.setFullYear(lastAvailableYear - 1);
+      lastYearStart.setMonth(0); // January of last year
+      
+      filteredEntries = entries.filter(([date]) => {
+        const entryDate = new Date(date + '-01');
+        return entryDate >= lastYearStart;
+      });
+    }
   }
 
   // Create labels with better formatting for different time ranges
@@ -353,22 +375,27 @@ function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    // For better readability, show fewer labels on longer time ranges
-    if (timeRange === '5Y' && array.length > 20) {
-      // Show every 6th month for 5-year view
-      if (index % 6 === 0 || index === array.length - 1) {
-        return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
+    // Smart label display based on data length and time range
+    const shouldShowLabel = () => {
+      if (timeRange === '1Y') {
+        // Show all labels for 1-year view (usually 12 months or less)
+        return true;
+      } else if (timeRange === '3Y') {
+        // Show every 3rd month for 3-year view to avoid overlap
+        return index % 3 === 0 || index === array.length - 1;
+      } else if (timeRange === '5Y') {
+        // Show every 6th month for 5-year view to avoid overlap
+        return index % 6 === 0 || index === array.length - 1;
+      } else {
+        // Default: show every other month
+        return index % 2 === 0 || index === array.length - 1;
       }
-      return '';
-    } else if (timeRange === '3Y' && array.length > 12) {
-      // Show every 3rd month for 3-year view
-      if (index % 3 === 0 || index === array.length - 1) {
+    };
+    
+    if (shouldShowLabel()) {
         return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
-      }
-      return '';
     } else {
-      // Show all labels for 1-year view or shorter datasets
-      return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
+      return '';
     }
   });
 
@@ -427,7 +454,9 @@ function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '
       strokeWidth: 3,
       color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`
     }],
-    timeRange: `${filteredEntries[0]?.[0]} - ${filteredEntries[filteredEntries.length - 1]?.[0]}`,
+    timeRange: filteredEntries.length > 0 ? 
+      `${filteredEntries[0]?.[0]} to ${filteredEntries[filteredEntries.length - 1]?.[0]}` : 
+      'No data available',
     insights
   };
 }

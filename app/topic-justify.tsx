@@ -57,9 +57,9 @@ export default function TopicJustify() {
   ];
 
   const timeRanges = [
-    { key: '1Y' as const, label: '1 Year', description: 'Quarterly data' },
-    { key: '3Y' as const, label: '3 Years', description: 'Annual trends' },
-    { key: '5Y' as const, label: '5 Years', description: 'Long-term analysis' }
+    { key: '1Y' as const, label: '1 Year', description: 'Last year of available data' },
+    { key: '3Y' as const, label: '3 Years', description: 'Last 3 years of available data' },
+    { key: '5Y' as const, label: '5 Years', description: 'Last 5 years of available data' }
   ];
 
   return (
@@ -131,9 +131,8 @@ export default function TopicJustify() {
               </Text>
             </View>
             <Text className="text-xs text-blue-700">
-              {selectedTimeRange === '5Y' && 'Shows 5-year trend with annual data points'}
-              {selectedTimeRange === '3Y' && 'Shows recent 3-year trend with detailed analysis'}
-              {selectedTimeRange === '1Y' && 'Shows current year quarterly breakdown'}
+              {currentData?.timeRange && `Showing data: ${currentData.timeRange}`}
+              {!currentData?.timeRange && 'Loading time range...'}
             </Text>
           </View>
           
