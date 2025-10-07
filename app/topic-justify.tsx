@@ -19,7 +19,7 @@ export default function TopicJustify() {
     isHot
   } = params;
 
-  const [selectedTimeRange, setSelectedTimeRange] = useState<'1Y' | '3Y' | '5Y'>('1Y');
+  const [selectedTimeRange, setSelectedTimeRange] = useState<'1Y' | '2Y' | '3Y'>('1Y');
   const [isZoomed, setIsZoomed] = useState(false);
   const [showPracticeModal, setShowPracticeModal] = useState(false);
 
@@ -58,8 +58,8 @@ export default function TopicJustify() {
 
   const timeRanges = [
     { key: '1Y' as const, label: '1 Year', description: 'Last year of available data' },
-    { key: '3Y' as const, label: '3 Years', description: 'Last 3 years of available data' },
-    { key: '5Y' as const, label: '5 Years', description: 'Last 5 years of available data' }
+    { key: '2Y' as const, label: '2 Years', description: 'Last 2 years of available data' },
+    { key: '3Y' as const, label: '3 Years', description: 'Last 3 years of available data' }
   ];
 
   return (
