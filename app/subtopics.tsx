@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions } from 'react-native';
+
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Search, Flame, Target, BookOpen, Play } from 'lucide-react-native';
@@ -39,7 +39,7 @@ export default function Subtopics() {
         topicColor: topicColor,
         rating: subtopic.rating.toString(),
         questionsCount: subtopic.questionsCount.toString(),
-        difficulty: subtopic.difficulty,
+        // difficulty: subtopic.difficulty,
         isHot: subtopic.isHot.toString()
       }
     });
