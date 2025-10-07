@@ -24,8 +24,8 @@ export default function Study() {
   };
 
   const getCardSize = (priority: number) => {
-    if (priority >= 9) return { width: width - 40, height: 140 }; // Large
-    if (priority >= 7) return { width: (width - 52) / 2, height: 120 }; // Medium
+    if (priority >= 4) return { width: width - 40, height: 140 }; // Large
+    if (priority >= 3) return { width: (width - 52) / 2, height: 120 }; // Medium
     return { width: (width - 52) / 2, height: 100 }; // Small
   };
 
@@ -100,9 +100,9 @@ export default function Study() {
           {topics && topics.length > 0 ? (
             <View className="flex-row flex-wrap gap-3">
               {topics
-                .sort((a, b) => b.priority - a.priority)
+                .sort((a, b) => b.rating - a.rating)
                 .map((topic) => {
-                  const cardSize = getCardSize(topic.priority);
+                  const cardSize = getCardSize(topic.rating);
                   
                   return (
                     <TopicCard
@@ -117,7 +117,7 @@ export default function Study() {
                       width={cardSize.width}
                       height={cardSize.height}
                       bottomLeftText=""
-                      bottomRightText={[`${topic.subtopicCount} Subtopics`, topic.difficulty]}
+                      bottomRightText={[`${topic.subtopicCount} Subtopics`]}
                       onPress={() => handleTopicPress(topic)}
                     />
                   );

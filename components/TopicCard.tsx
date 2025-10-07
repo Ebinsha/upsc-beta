@@ -42,7 +42,7 @@ export function TopicCard({
       <View className="flex-1 justify-between">
         {/* Top Section */}
         <View className="flex-row justify-between items-start">
-          <Text className="text-2xl">{icon}</Text>
+          {/* <Text className="text-2xl">{icon}</Text> */}
           {/* {isHot && (
             <View className="bg-red-500 rounded-xl p-1">
               <Flame size={12} color="#ffffff" />
