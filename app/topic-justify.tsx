@@ -1,10 +1,10 @@
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Star, Clock, Target, Play, ZoomIn, Calendar } from 'lucide-react-native';
-import { LineChart } from 'react-native-chart-kit';
-import { useState } from 'react';
-import { useChartData } from '@/hooks/useApiData';
 import { PracticeModal } from '@/components/PracticeModal';
+import { useChartData } from '@/hooks/useApiData';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeft, Calendar, Clock, Play, Star, Target, ZoomIn } from 'lucide-react-native';
+import { useState } from 'react';
+import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
 
 const { width } = Dimensions.get('window');
 
@@ -156,6 +156,36 @@ export default function TopicJustify() {
             
             {!chartLoading && !chartError && (
             currentData && currentData.labels.length > 0 && currentData.labels[0] !== 'No Data' && (
+            (() => {
+              // Calculate dynamic Y-axis configuration
+              const maxValue = Math.max(...currentData.datasets[0].data);
+              
+              // Smart Y-axis scaling based on max value
+              let yAxisMax, yAxisInterval, segments;
+              
+              if (maxValue === 0) {
+                yAxisMax = 5;
+                yAxisInterval = 1;
+                segments = 5;
+              } else if (maxValue === 1) {
+                yAxisMax = 1;
+                yAxisInterval = 1;
+                segments = 1;
+              } else if (maxValue <= 5) {
+                yAxisMax = maxValue;
+                yAxisInterval = 1;
+                segments = maxValue;
+              } else if (maxValue <= 10) {
+                yAxisMax = Math.ceil(maxValue * 1.1);
+                yAxisInterval = Math.ceil(yAxisMax / 5);
+                segments = 5;
+              } else {
+                yAxisMax = Math.ceil(maxValue * 1.2);
+                yAxisInterval = Math.ceil(yAxisMax / 5);
+                segments = 5;
+              }
+              
+              return (
             <LineChart
               data={currentData}
               width={isZoomed ? width * 1.8 : width - 40}
@@ -187,6 +217,9 @@ export default function TopicJustify() {
                   strokeDasharray: "5,5",
                   stroke: "#e2e8f0",
                   strokeWidth: 1
+                },
+                formatYLabel: (value) => {
+                  return value === '0' ? '' : value;
                 }
               }}
               className="rounded-xl"
@@ -198,8 +231,12 @@ export default function TopicJustify() {
               fromZero={true}
               withInnerLines={true}
               withOuterLines={true}
-              yAxisInterval={1}
+              yAxisInterval={yAxisInterval}
+              yAxisSuffix=""
+              segments={segments}
             />
+            );
+            })()
             ))}
             
             {!chartLoading && !chartError && (!currentData || currentData.labels[0] === 'No Data') && (
