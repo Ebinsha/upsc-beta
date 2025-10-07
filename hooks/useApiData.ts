@@ -264,7 +264,7 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
   });
 }
 export function useChartData(subtopicId: string) {
-  return useApiData<ChartData>({
+  const { data: rawData, loading, error, refetch } = useApiData<any>({
     endpoint: '/line_chart',
     method: 'POST',
     body: {
@@ -274,4 +274,147 @@ export function useChartData(subtopicId: string) {
     enabled: !!subtopicId,
     dependencies: [subtopicId]
   });
+
+  // Transform API data to chart format
+  const transformedData = rawData ? transformChartData(rawData, subtopicId) : null;
+
+  return {
+    data: transformedData,
+    loading,
+    error,
+    refetch
+  };
+}
+
+// Helper function to transform API chart data
+function transformChartData(apiData: any, subtopicId: string): ChartData {
+  console.log('Raw chart API data:', JSON.stringify(apiData, null, 2));
+  
+  if (!apiData.range) {
+    console.log('No range data found in API response');
+    return createEmptyChartData();
+  }
+
+  // Get the data for the specific subtopic ID
+  const subtopicData = apiData.range[subtopicId];
+  
+  if (!subtopicData) {
+    console.log(`No data found for subtopic ID: ${subtopicId}`);
+    // Try to get the first available subtopic data
+    const firstSubtopicId = Object.keys(apiData.range)[0];
+    if (firstSubtopicId) {
+      console.log(`Using data from first available subtopic: ${firstSubtopicId}`);
+      return processSubtopicData(apiData.range[firstSubtopicId]);
+    }
+    return createEmptyChartData();
+  }
+
+  return processSubtopicData(subtopicData);
+}
+
+// Process individual subtopic data
+function processSubtopicData(subtopicData: Record<string, number>): ChartData {
+  const entries = Object.entries(subtopicData);
+  
+  // Sort by date
+  entries.sort(([a], [b]) => {
+    const dateA = new Date(a + '-01');
+    const dateB = new Date(b + '-01');
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  const labels = entries.map(([date]) => {
+    const [year, month] = date.split('-');
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
+  });
+
+  const data = entries.map(([, value]) => value);
+  
+  // Calculate insights
+  const totalQuestions = data.reduce((sum, val) => sum + val, 0);
+  const maxValue = Math.max(...data);
+  const avgValue = totalQuestions / data.length;
+  const nonZeroMonths = data.filter(val => val > 0).length;
+  const growthRate = calculateGrowthRate(data);
+
+  const insights = [];
+  
+  if (totalQuestions > 0) {
+    insights.push({
+      title: 'Total Questions',
+      description: `${totalQuestions} questions appeared across all time periods`,
+      percentage: totalQuestions
+    });
+  }
+
+  if (maxValue > 0) {
+    const maxIndex = data.indexOf(maxValue);
+    insights.push({
+      title: 'Peak Activity',
+      description: `Highest activity in ${labels[maxIndex]} with ${maxValue} questions`,
+      percentage: Math.round((maxValue / totalQuestions) * 100)
+    });
+  }
+
+  if (nonZeroMonths > 0) {
+    insights.push({
+      title: 'Active Periods',
+      description: `Questions appeared in ${nonZeroMonths} out of ${data.length} time periods`,
+      percentage: Math.round((nonZeroMonths / data.length) * 100)
+    });
+  }
+
+  if (growthRate !== 0) {
+    insights.push({
+      title: 'Trend Analysis',
+      description: growthRate > 0 ? 
+        `Increasing trend with ${Math.abs(growthRate)}% growth` : 
+        `Decreasing trend with ${Math.abs(growthRate)}% decline`,
+      percentage: Math.abs(growthRate)
+    });
+  }
+
+  return {
+    labels,
+    datasets: [{
+      data,
+      strokeWidth: 3,
+      color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`
+    }],
+    timeRange: `${labels[0]} - ${labels[labels.length - 1]}`,
+    insights
+  };
+}
+
+// Calculate growth rate between first and last non-zero values
+function calculateGrowthRate(data: number[]): number {
+  const nonZeroValues = data.filter(val => val > 0);
+  if (nonZeroValues.length < 2) return 0;
+  
+  const firstValue = nonZeroValues[0];
+  const lastValue = nonZeroValues[nonZeroValues.length - 1];
+  
+  if (firstValue === 0) return 0;
+  
+  return Math.round(((lastValue - firstValue) / firstValue) * 100);
+}
+
+// Create empty chart data for fallback
+function createEmptyChartData(): ChartData {
+  return {
+    labels: ['No Data'],
+    datasets: [{
+      data: [0],
+      strokeWidth: 2,
+      color: (opacity = 1) => `rgba(156, 163, 175, ${opacity})`
+    }],
+    timeRange: 'No data available',
+    insights: [{
+      title: 'No Data',
+      description: 'No chart data available for this topic',
+      percentage: 0
+    }]
+  };
 }
