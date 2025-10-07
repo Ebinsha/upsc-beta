@@ -105,7 +105,7 @@ export default function Study() {
                   const cardSize = getCardSize(topic.priority);
                   
                   return (
-                    <TopiicCard
+                    <TopicCard
                       key={topic.id}
                       id={topic.id}
                       name={topic.name}
