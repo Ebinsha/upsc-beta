@@ -267,12 +267,11 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
 export function useChartData(subtopicId: string) {
   return useApiData<ChartData>({
     endpoint: '/line_chart',
-    method: 'GET',
+    method: 'POST',
     body: {
       topic_title: subtopicId,
       topic_subtopic: "0.0"
     },
-    useBodyForGet: true,
     enabled: !!subtopicId,
     dependencies: [subtopicId]
   });
