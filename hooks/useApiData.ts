@@ -1,6 +1,6 @@
 import { ChartData } from '@/types/api';
 import { Subtopic } from '@/types/topic';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface UseApiDataOptions {
   endpoint: string;
@@ -265,7 +265,7 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
     };
   });
 }
-export function useChartData(subtopicId: string, timeRange?: '1Y' | '3Y' | '5Y') {
+export function useChartData(subtopicId: string, timeRange?: '1Y' | '2Y' | '3Y') {
   const { data: rawData, loading, error, refetch } = useApiData<any>({
     endpoint: '/line_chart',
     method: 'POST',
@@ -289,7 +289,7 @@ export function useChartData(subtopicId: string, timeRange?: '1Y' | '3Y' | '5Y')
 }
 
 // Helper function to transform API chart data with time range
-function transformChartData(apiData: any, subtopicId: string, timeRange?: '1Y' | '3Y' | '5Y'): ChartData {
+function transformChartData(apiData: any, subtopicId: string, timeRange?: '1Y' | '2Y' | '3Y'): ChartData {
   console.log('Raw chart API data:', JSON.stringify(apiData, null, 2));
   
   if (!apiData.range) {
@@ -315,7 +315,7 @@ function transformChartData(apiData: any, subtopicId: string, timeRange?: '1Y' |
 }
 
 // Process individual subtopic data with time range filtering
-function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '1Y' | '3Y' | '5Y'): ChartData {
+function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '1Y' | '2Y' | '3Y'): ChartData {
   const entries = Object.entries(subtopicData);
   
   // Sort by date
@@ -341,15 +341,15 @@ function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '
         cutoffDate.setFullYear(lastAvailableYear - 1);
         cutoffDate.setMonth(11); // December of previous year
         break;
+      case '2Y':
+        // Show data from last 2 years based on last available year
+        cutoffDate.setFullYear(lastAvailableYear - 2);
+        cutoffDate.setMonth(11); // December of 2 years ago
+        break;
       case '3Y':
         // Show data from last 3 years based on last available year
         cutoffDate.setFullYear(lastAvailableYear - 3);
         cutoffDate.setMonth(11); // December of 3 years ago
-        break;
-      case '5Y':
-        // Show data from last 5 years based on last available year
-        cutoffDate.setFullYear(lastAvailableYear - 5);
-        cutoffDate.setMonth(11); // December of 5 years ago
         break;
     }
     
@@ -380,14 +380,14 @@ function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '
     // Smart label display based on data length and time range
     const shouldShowLabel = () => {
       if (timeRange === '1Y') {
-        // Show all labels for 1-year view (usually 12 months or less)
+        // Show all labels for 1-year view
         return true;
+      } else if (timeRange === '2Y') {
+        // Show every 2nd month for 2-year view
+        return index % 2 === 0 || index === array.length - 1;
       } else if (timeRange === '3Y') {
-        // Show every 3rd month for 3-year view to avoid overlap
+        // Show every 3rd month for 3-year view
         return index % 3 === 0 || index === array.length - 1;
-      } else if (timeRange === '5Y') {
-        // Show every 6th month for 5-year view to avoid overlap
-        return index % 6 === 0 || index === array.length - 1;
       } else {
         // Default: show every other month
         return index % 2 === 0 || index === array.length - 1;
