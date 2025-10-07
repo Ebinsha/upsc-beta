@@ -236,21 +236,21 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
   console.log('Subtopic IDs:', JSON.stringify(subtopicsIds, null, 2));
   
   return Object.entries(subtopicsIds).map(([id, subtopicData], index) => {
-    const data = subtopicData as { name: string, count: number };
+    const data = subtopicData as { name: string, count: number , hot: boolean};
     const priority = data.count; // Use count as priority
     const rating = Math.round((Math.random() * 4 + 1) * 10) / 10; // Random 1.0-5.0 with 1 decimal
-    const isHot = Math.random() > 0.7; // 30% chance of being hot
+    const isHot = data.hot; // from API
     const questionsCount = Math.floor(Math.random() * 150) + 1; // Random 1-150
     
-    // Determine difficulty based on questions count
-    let difficulty: 'Low' | 'Medium' | 'High';
-    if (questionsCount < 50) {
-      difficulty = 'Low';
-    } else if (questionsCount <= 100) {
-      difficulty = 'Medium';
-    } else {
-      difficulty = 'High';
-    }
+    // // Determine difficulty based on questions count
+    // let difficulty: 'Low' | 'Medium' | 'High';
+    // if (questionsCount < 50) {
+    //   difficulty = 'Low';
+    // } else if (questionsCount <= 100) {
+    //   difficulty = 'Medium';
+    // } else {
+    //   difficulty = 'High';
+    // }
 
     return {
       id,
@@ -260,7 +260,7 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
       isHot,
       icon: subtopicIcons[index % subtopicIcons.length],
       questionsCount,
-      difficulty,
+      // difficulty,
       topicId: topicName.toLowerCase()
     };
   });
