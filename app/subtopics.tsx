@@ -39,7 +39,7 @@ export default function Subtopics() {
         topicColor: topicColor,
         rating: subtopic.rating.toString(),
         questionsCount: subtopic.questionsCount.toString(),
-        difficulty: subtopic.difficulty,
+        // difficulty: subtopic.difficulty,
         isHot: subtopic.isHot.toString()
       }
     });
