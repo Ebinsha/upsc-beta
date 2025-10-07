@@ -20,16 +20,17 @@ export default function TopicJustify() {
   } = params;
 
   const [selectedTimeRange, setSelectedTimeRange] = useState<'1Y' | '3Y' | '5Y'>('1Y');
-  const [chartScrollEnabled, setChartScrollEnabled] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
   const [showPracticeModal, setShowPracticeModal] = useState(false);
 
   // Use the API hook to fetch chart data
-  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(params.topicId as string);
+  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(
+    params.topicId as string, 
+    selectedTimeRange
+  );
 
-  console.log({ chartApiData });
-  // Use API data directly
+  // Use transformed API data
   const currentData = chartApiData;
-  const currentInsights = chartApiData?.insights || [];
 
   const recommendations = [
     {
@@ -96,7 +97,7 @@ export default function TopicJustify() {
             </View>
             <TouchableOpacity 
               className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center"
-              onPress={() => setChartScrollEnabled(!chartScrollEnabled)}
+              onPress={() => setIsZoomed(!isZoomed)}
             >
               <ZoomIn size={16} color="#3b82f6" />
             </TouchableOpacity>
@@ -138,7 +139,7 @@ export default function TopicJustify() {
           
           {/* Enhanced Chart */}
           <ScrollView 
-            horizontal={chartScrollEnabled && selectedTimeRange === '5Y'}
+            horizontal={isZoomed}
             showsHorizontalScrollIndicator={false}
             className="rounded-xl"
           >
@@ -155,11 +156,11 @@ export default function TopicJustify() {
             )}
             
             {!chartLoading && !chartError && (
-            currentData && (
+            currentData && currentData.labels.length > 0 && currentData.labels[0] !== 'No Data' && (
             <LineChart
               data={currentData}
-              width={chartScrollEnabled && selectedTimeRange === '5Y' ? width * 1.5 : width - 40}
-              height={220}
+              width={isZoomed ? width * 1.8 : width - 40}
+              height={240}
               chartConfig={{
                 backgroundColor: '#ffffff',
                 backgroundGradientFrom: '#ffffff',
@@ -167,6 +168,13 @@ export default function TopicJustify() {
                 decimalPlaces: 0,
                 color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
                 labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
+                propsForVerticalLabels: {
+                  fontSize: 10,
+                  rotation: isZoomed ? 0 : -45,
+                },
+                propsForHorizontalLabels: {
+                  fontSize: 10,
+                },
                 style: {
                   borderRadius: 16,
                 },
@@ -189,19 +197,22 @@ export default function TopicJustify() {
               withVerticalLabels={true}
               withHorizontalLabels={true}
               fromZero={true}
+              withInnerLines={true}
+              withOuterLines={true}
+              yAxisInterval={1}
             />
             ))}
             
-            {!chartLoading && !chartError && !currentData && (
+            {!chartLoading && !chartError && (!currentData || currentData.labels[0] === 'No Data') && (
               <View className="items-center justify-center h-52">
                 <Text className="text-sm text-slate-500">No chart data available</Text>
               </View>
             )}
           </ScrollView>
           
-          {chartScrollEnabled && selectedTimeRange === '5Y' && (
+          {isZoomed && (
             <Text className="text-xs text-slate-500 text-center mt-2">
-              💡 Scroll horizontally to view detailed 5-year data
+              💡 Scroll horizontally to view detailed chart data
             </Text>
           )}
           
@@ -209,35 +220,15 @@ export default function TopicJustify() {
           <View className="mt-4 p-3 bg-slate-50 rounded-xl">
             <Text className="text-sm font-semibold text-slate-800 mb-2">Key Insights:</Text>
             <View className="gap-1">
-              {currentInsights.length > 0 ? (
-                currentInsights.map((insight, index) => (
+              {currentData?.insights && currentData.insights.length > 0 ? (
+                currentData.insights.map((insight, index) => (
                   <Text key={index} className="text-xs text-slate-600">
                     • {insight.description}
                     {insight.percentage && ` (${insight.percentage}%)`}
                   </Text>
                 ))
               ) : (
-                <>
-              {selectedTimeRange === '5Y' && (
-                <>
-                  <Text className="text-xs text-slate-600">• 463% growth over 5 years (8 → 45 questions)</Text>
-                  <Text className="text-xs text-slate-600">• Steepest growth in 2021-2022 period</Text>
-                  <Text className="text-xs text-slate-600">• Consistent upward trend indicates high relevance</Text>
-                </>
-              )}
-              {selectedTimeRange === '3Y' && (
-                <>
-                  <Text className="text-xs text-slate-600">• 80% increase in recent 3 years</Text>
-                  <Text className="text-xs text-slate-600">• Accelerating trend in exam frequency</Text>
-                </>
-              )}
-              {selectedTimeRange === '1Y' && (
-                <>
-                  <Text className="text-xs text-slate-600">• Steady quarterly growth this year</Text>
-                  <Text className="text-xs text-slate-600">• Q4 shows highest question frequency</Text>
-                </>
-              )}
-                </>
+                <Text className="text-xs text-slate-600">• No insights available for this topic</Text>
               )}
             </View>
           </View>
