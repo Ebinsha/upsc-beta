@@ -270,8 +270,8 @@ export function useChartData(subtopicId: string, timeRange?: '1Y' | '2Y' | '3Y')
     endpoint: '/line_chart',
     method: 'POST',
     body: {
-      topic_title: subtopicId,
-      topic_subtopic: "0.0"
+      topic_id: subtopicId,
+    
     },
     enabled: !!subtopicId,
     dependencies: [subtopicId, timeRange]
