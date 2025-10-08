@@ -237,7 +237,7 @@ export default function PracticeTest() {
           <MCQCard
             question={mockQuestions[currentQuestion].question}
             options={mockQuestions[currentQuestion].options}
-            selectedAnswer={currentAnswer?.selectedAnswer || null}
+            selectedAnswer={currentAnswer?.selectedAnswer ?? null}
             onSelectAnswer={handleAnswerSelect}
             questionNumber={currentQuestion + 1}
             totalQuestions={mockQuestions.length}
