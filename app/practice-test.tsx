@@ -122,21 +122,28 @@ export default function PracticeTest() {
     const question = mockQuestions[currentQuestion];
     const isCorrect = answerIndex === question.correctAnswer;
     
-    console.log('Answer selected:', {
-      answerIndex,
-      questionId: question.id,
-      correctAnswer: question.correctAnswer,
-      isCorrect
-    });
+    console.log('handleAnswerSelect:', {
+    answerIndex,
+    currentQuestion,
+    questionId: question.id,
+    previousAnswers: answers
+  });
+
+ 
     
     setAnswers(prev => {
-      const newAnswers = prev.map(answer => 
-        answer.questionId === question.id
-          ? { ...answer, selectedAnswer: answerIndex, isCorrect, timeTaken }
-          : answer
-      );
-      console.log('Updated answers:', newAnswers);
-      return newAnswers;
+      return prev.map(answer => 
+      answer.questionId === mockQuestions[currentQuestion].id
+        ? { ...answer, selectedAnswer: Number(answerIndex) }  // Ensure number type
+        : answer
+    );
+      // const newAnswers = prev.map(answer => 
+      //   answer.questionId === question.id
+      //     ? { ...answer, selectedAnswer: answerIndex, isCorrect, timeTaken }
+      //     : answer
+      // );
+      // console.log('Updated answers:', newAnswers);
+      // return newAnswers;
     });
   };
 
@@ -252,7 +259,7 @@ export default function PracticeTest() {
           <MCQCard
             question={mockQuestions[currentQuestion].question}
             options={mockQuestions[currentQuestion].options}
-            selectedAnswer={currentAnswer?.selectedAnswer || null}
+            selectedAnswer={currentAnswer?.selectedAnswer ?? null}
             onSelectAnswer={handleAnswerSelect}
             questionNumber={currentQuestion + 1}
             totalQuestions={mockQuestions.length}
