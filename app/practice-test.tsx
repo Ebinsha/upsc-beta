@@ -2,7 +2,7 @@ import { MCQCard } from '@/components/MCQCard';
 import { TestTimer } from '@/components/TestTimer';
 import { Question, TestAnswer } from '@/types/test';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, ChevronLeft, ChevronRight, Flag } from 'lucide-react-native';
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -17,7 +17,7 @@ const mockQuestions: Question[] = [
       'Human activities, particularly greenhouse gas emissions',
       'Volcanic eruptions'
     ],
-    correctAnswer: 2,
+    correctAnswer: 1,
     explanation: 'According to the Intergovernmental Panel on Climate Change (IPCC), human activities, particularly the emission of greenhouse gases like CO2, CH4, and N2O, are the primary drivers of climate change since the mid-20th century.',
     context: 'This question tests understanding of climate science fundamentals, which is crucial for environmental policy and UPSC preparation.',
     references: [
@@ -46,7 +46,7 @@ const mockQuestions: Question[] = [
       'Below 3°C above pre-industrial levels',
       'Below 2.5°C above pre-industrial levels'
     ],
-    correctAnswer: 1,
+    correctAnswer: 0,
     explanation: 'The Paris Agreement aims to strengthen the global response to climate change by keeping global temperature rise this century well below 2°C above pre-industrial levels and pursuing efforts to limit the temperature increase even further to 1.5°C.',
     context: 'Understanding international climate agreements is essential for questions related to India\'s climate commitments and global environmental governance.',
     references: [
@@ -75,7 +75,7 @@ const mockQuestions: Question[] = [
       'Create additional carbon sink of 2.5-3 billion tonnes of CO2 equivalent',
       'Achieve net-zero emissions by 2025'
     ],
-    correctAnswer: 3,
+    correctAnswer: 2,
     explanation: 'India has committed to achieve net-zero emissions by 2070, not 2025. The other three options are correct components of India\'s NDCs submitted under the Paris Agreement.',
     context: 'This question tests knowledge of India\'s specific climate commitments, which frequently appear in current affairs and environmental policy questions.',
     references: [
@@ -119,15 +119,32 @@ export default function PracticeTest() {
 
   const handleAnswerSelect = (answerIndex: number) => {
     const timeTaken = Math.floor((new Date().getTime() - questionStartTime.getTime()) / 1000);
-    const isCorrect = answerIndex === mockQuestions[currentQuestion].correctAnswer;
+    const question = mockQuestions[currentQuestion];
+    const isCorrect = answerIndex === question.correctAnswer;
     
-    console.log('Answer selected:', answerIndex, 'for question:', mockQuestions[currentQuestion].id, 'Current answers:', answers);
+    console.log('handleAnswerSelect:', {
+    answerIndex,
+    currentQuestion,
+    questionId: question.id,
+    previousAnswers: answers
+  });
+
+ 
     
-    setAnswers(prev => prev.map(answer => 
+    setAnswers(prev => {
+      return prev.map(answer => 
       answer.questionId === mockQuestions[currentQuestion].id
-        ? { ...answer, selectedAnswer: answerIndex, isCorrect, timeTaken }
+        ? { ...answer, selectedAnswer: Number(answerIndex) }  // Ensure number type
         : answer
-    ));
+    );
+      // const newAnswers = prev.map(answer => 
+      //   answer.questionId === question.id
+      //     ? { ...answer, selectedAnswer: answerIndex, isCorrect, timeTaken }
+      //     : answer
+      // );
+      // console.log('Updated answers:', newAnswers);
+      // return newAnswers;
+    });
   };
 
   const handleNextQuestion = () => {
@@ -184,6 +201,11 @@ export default function PracticeTest() {
   };
 
   const currentAnswer = answers.find(a => a.questionId === mockQuestions[currentQuestion]?.id);
+  console.log('Current answer state:', { 
+    questionId: mockQuestions[currentQuestion]?.id,
+    currentAnswer,
+    allAnswers: answers 
+  });
   const answeredCount = answers.filter(a => a.selectedAnswer !== null).length;
 
   return (
@@ -206,9 +228,8 @@ export default function PracticeTest() {
           
           <TouchableOpacity
             onPress={handleSubmitTest}
-            className="bg-blue-500 px-4 py-2 rounded-xl flex-row items-center gap-2"
+            className="bg-red-500 px-4 py-2 rounded-xl flex-row items-center gap-2"
           >
-            <Flag size={16} color="#ffffff" />
             <Text className="text-white font-semibold">Submit</Text>
           </TouchableOpacity>
         </View>
