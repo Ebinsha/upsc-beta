@@ -1,10 +1,10 @@
-import { PracticeModal } from '@/components/PracticeModal';
-import { useChartData } from '@/hooks/useApiData';
-import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Calendar, Clock, Play, Star, Target, ZoomIn } from 'lucide-react-native';
-import { useState } from 'react';
-import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
+import { ArrowLeft, Star, Clock, Target, Play, ZoomIn, Calendar } from 'lucide-react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { useState } from 'react';
+import { useChartData } from '@/hooks/useApiData';
+import { PracticeModal } from '@/components/PracticeModal';
 
 const { width } = Dimensions.get('window');
 
@@ -19,7 +19,7 @@ export default function TopicJustify() {
     isHot
   } = params;
 
-  const [selectedTimeRange, setSelectedTimeRange] = useState<'1Y' | '2Y' | '3Y'>('1Y');
+  const [selectedTimeRange, setSelectedTimeRange] = useState<'1Y' | '3Y' | '5Y'>('1Y');
   const [isZoomed, setIsZoomed] = useState(false);
   const [showPracticeModal, setShowPracticeModal] = useState(false);
 
@@ -58,8 +58,8 @@ export default function TopicJustify() {
 
   const timeRanges = [
     { key: '1Y' as const, label: '1 Year', description: 'Last year of available data' },
-    { key: '2Y' as const, label: '2 Years', description: 'Last 2 years of available data' },
-    { key: '3Y' as const, label: '3 Years', description: 'Last 3 years of available data' }
+    { key: '3Y' as const, label: '3 Years', description: 'Last 3 years of available data' },
+    { key: '5Y' as const, label: '5 Years', description: 'Last 5 years of available data' }
   ];
 
   return (
@@ -217,9 +217,6 @@ export default function TopicJustify() {
                   strokeDasharray: "5,5",
                   stroke: "#e2e8f0",
                   strokeWidth: 1
-                },
-                formatYLabel: (value) => {
-                  return value === '0' ? '' : value;
                 }
               }}
               className="rounded-xl"
@@ -324,19 +321,23 @@ export default function TopicJustify() {
       </ScrollView>
 
       {/* Floating Practice Button */}
-      <TouchableOpacity
-        className="absolute bottom-6 right-6 w-16 h-16 bg-blue-500 rounded-full items-center justify-center shadow-lg"
-        onPress={() => setShowPracticeModal(true)}
-        style={{
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-        }}
-      >
-        <Play size={24} color="#ffffff" />
-      </TouchableOpacity>
+      <View className="absolute bottom-6 left-0 right-0 items-center">
+        <TouchableOpacity
+          className="bg-blue-500 px-8 py-4 items-center justify-center shadow-lg flex-row gap-2"
+          onPress={() => setShowPracticeModal(true)}
+          style={{
+            borderRadius: 50,
+            elevation: 8,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+          }}
+        >
+          <Play size={20} color="#ffffff" />
+          <Text className="text-white font-semibold text-base">Start Practice</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Practice Modal */}
       <PracticeModal

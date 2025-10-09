@@ -198,19 +198,23 @@ export default function Subtopics() {
       )}
 
       {/* Floating Practice Button */}
-      <TouchableOpacity
-        className="absolute bottom-6 right-6 w-16 h-16 bg-blue-500 rounded-full items-center justify-center shadow-lg"
-        onPress={() => setShowPracticeModal(true)}
-        style={{
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-        }}
-      >
-        <Play size={24} color="#ffffff" />
-      </TouchableOpacity>
+      <View className="absolute bottom-6 left-0 right-0 items-center">
+        <TouchableOpacity
+          className="bg-blue-500 px-8 py-4 items-center justify-center shadow-lg flex-row gap-2"
+          onPress={() => setShowPracticeModal(true)}
+          style={{
+            borderRadius: 50,
+            elevation: 8,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+          }}
+        >
+          <Play size={20} color="#ffffff" />
+          <Text className="text-white font-semibold text-base">Start Practice</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Practice Modal */}
       <PracticeModal
