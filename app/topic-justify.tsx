@@ -52,7 +52,7 @@ export default function TopicJustify() {
     { title: 'Advanced Practice', questions: 50, time: '60 min', difficulty: 'Hard' },
   ];
 
-  const timeRanges = [
+  const  = [
     { key: '1Y' as const, label: '1 Year', description: 'Last year of available data' },
     { key: '3Y' as const, label: '3 Years', description: 'Last 3 years of available data' },
     { key: '5Y' as const, label: '5 Years', description: 'Last 5 years of available data' }
