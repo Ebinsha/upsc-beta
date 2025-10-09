@@ -2,7 +2,7 @@ import { MCQCard } from '@/components/MCQCard';
 import { TestTimer } from '@/components/TestTimer';
 import { Question, TestAnswer } from '@/types/test';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, ChevronLeft, ChevronRight, Flag } from 'lucide-react-native';
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -230,7 +230,7 @@ export default function PracticeTest() {
             onPress={handleSubmitTest}
             className="bg-blue-500 px-4 py-2 rounded-xl flex-row items-center gap-2"
           >
-            <Flag size={16} color="#ffffff" />
+            {/* <Flag size={16} color="#ffffff" /> */}
             <Text className="text-white font-semibold">Submit</Text>
           </TouchableOpacity>
         </View>

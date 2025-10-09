@@ -1,10 +1,10 @@
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Star, Clock, Target, Play, ZoomIn, Calendar } from 'lucide-react-native';
-import { LineChart } from 'react-native-chart-kit';
-import { useState } from 'react';
-import { useChartData } from '@/hooks/useApiData';
 import { PracticeModal } from '@/components/PracticeModal';
+import { useChartData } from '@/hooks/useApiData';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeft, Calendar, Clock, Play, Star, Target, ZoomIn } from 'lucide-react-native';
+import { useState } from 'react';
+import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
 
 const { width } = Dimensions.get('window');
 
@@ -19,14 +19,14 @@ export default function TopicJustify() {
     isHot
   } = params;
 
-  const [selectedTimeRange, setSelectedTimeRange] = useState<'1Y' | '3Y' | '5Y'>('1Y');
+  const [selectedViewType, setSelectedViewType] = useState<'quarterly' | 'halfyearly' | 'Alldata'>('quarterly');
   const [isZoomed, setIsZoomed] = useState(false);
   const [showPracticeModal, setShowPracticeModal] = useState(false);
 
   // Use the API hook to fetch chart data
   const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(
     params.topicId as string, 
-    selectedTimeRange
+    selectedViewType
   );
 
   // Use transformed API data
@@ -56,10 +56,10 @@ export default function TopicJustify() {
     { title: 'Advanced Practice', questions: 50, time: '60 min', difficulty: 'Hard' },
   ];
 
-  const timeRanges = [
-    { key: '1Y' as const, label: '1 Year', description: 'Last year of available data' },
-    { key: '3Y' as const, label: '3 Years', description: 'Last 3 years of available data' },
-    { key: '5Y' as const, label: '5 Years', description: 'Last 5 years of available data' }
+  const viewTypes = [
+    { key: 'quarterly' as const, label: 'Quarterly', description: 'Show data points every 3 months' },
+    { key: 'halfyearly' as const, label: 'Half yearly', description: 'Show data points every 6 months' },
+    { key: 'Alldata' as const, label: 'All data', description: 'All available trend pattern' }
   ];
 
   return (
@@ -103,36 +103,36 @@ export default function TopicJustify() {
             </TouchableOpacity>
           </View>
           
-          {/* Time Range Selector */}
+          {/* View Type Selector */}
           <View className="flex-row bg-slate-100 rounded-xl p-1 mb-4">
-            {timeRanges.map((range) => (
+            {viewTypes.map((viewType) => (
               <TouchableOpacity
-                key={range.key}
+                key={viewType.key}
                 className={`flex-1 py-2 px-3 rounded-lg items-center ${
-                  selectedTimeRange === range.key ? 'bg-white' : ''
+                  selectedViewType === viewType.key ? 'bg-white' : ''
                 }`}
-                onPress={() => setSelectedTimeRange(range.key)}
+                onPress={() => setSelectedViewType(viewType.key)}
               >
                 <Text className={`text-sm font-semibold ${
-                  selectedTimeRange === range.key ? 'text-blue-600' : 'text-slate-600'
+                  selectedViewType === viewType.key ? 'text-blue-600' : 'text-slate-600'
                 }`}>
-                  {range.label}
+                  {viewType.label}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
           
-          {/* Chart Description */}
+         {/* View Description */}
           <View className="bg-blue-50 p-3 rounded-xl mb-4">
             <View className="flex-row items-center gap-2 mb-1">
               <Calendar size={16} color="#3b82f6" />
               <Text className="text-sm font-semibold text-blue-800">
-                {timeRanges.find(r => r.key === selectedTimeRange)?.description}
+                {viewTypes.find(v => v.key === selectedViewType)?.description}
               </Text>
             </View>
             <Text className="text-xs text-blue-700">
-              {currentData?.timeRange && `Showing data: ${currentData.timeRange}`}
-              {!currentData?.timeRange && 'Loading time range...'}
+              {currentData?.timeRange && `${currentData.timeRange}`}
+              {!currentData?.timeRange && 'Loading data...'}
             </Text>
           </View>
           
@@ -217,6 +217,9 @@ export default function TopicJustify() {
                   strokeDasharray: "5,5",
                   stroke: "#e2e8f0",
                   strokeWidth: 1
+                },
+                formatYLabel: (value) => {
+                  return value === '0' ? '' : value;
                 }
               }}
               className="rounded-xl"
@@ -320,7 +323,7 @@ export default function TopicJustify() {
         </View>
       </ScrollView>
 
-      {/* Floating Practice Button */}
+       {/* Floating Practice Button */}
       <View className="absolute bottom-6 left-0 right-0 items-center">
         <TouchableOpacity
           className="bg-blue-500 px-8 py-4 items-center justify-center shadow-lg flex-row gap-2"
