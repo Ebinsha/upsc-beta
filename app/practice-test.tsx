@@ -228,9 +228,8 @@ export default function PracticeTest() {
           
           <TouchableOpacity
             onPress={handleSubmitTest}
-            className="bg-blue-500 px-4 py-2 rounded-xl flex-row items-center gap-2"
+            className="bg-red-500 px-4 py-2 rounded-xl flex-row items-center gap-2"
           >
-            {/* <Flag size={16} color="#ffffff" /> */}
             <Text className="text-white font-semibold">Submit</Text>
           </TouchableOpacity>
         </View>
