@@ -88,7 +88,7 @@ export default function TopicJustify() {
             <View className="flex-1">
               <Text className="text-lg font-bold text-slate-800 mb-1">Question Frequency Trend</Text>
               <Text className="text-sm text-slate-500">
-                How often this topic appears in exams over time
+                Historical data showing question frequency across all available years
               </Text>
             </View>
             <TouchableOpacity 
@@ -99,36 +99,36 @@ export default function TopicJustify() {
             </TouchableOpacity>
           </View>
           
-          {/* Time Range Selector */}
+          {/* View Type Selector */}
           <View className="flex-row bg-slate-100 rounded-xl p-1 mb-4">
-            {timeRanges.map((range) => (
+            {viewTypes.map((viewType) => (
               <TouchableOpacity
-                key={range.key}
+                key={viewType.key}
                 className={`flex-1 py-2 px-3 rounded-lg items-center ${
-                  selectedTimeRange === range.key ? 'bg-white' : ''
+                  selectedViewType === viewType.key ? 'bg-white' : ''
                 }`}
-                onPress={() => setSelectedTimeRange(range.key)}
+                onPress={() => setSelectedViewType(viewType.key)}
               >
                 <Text className={`text-sm font-semibold ${
-                  selectedTimeRange === range.key ? 'text-blue-600' : 'text-slate-600'
+                  selectedViewType === viewType.key ? 'text-blue-600' : 'text-slate-600'
                 }`}>
-                  {range.label}
+                  {viewType.label}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
           
-          {/* Chart Description */}
+          {/* View Description */}
           <View className="bg-blue-50 p-3 rounded-xl mb-4">
             <View className="flex-row items-center gap-2 mb-1">
               <Calendar size={16} color="#3b82f6" />
               <Text className="text-sm font-semibold text-blue-800">
-                {timeRanges.find(r => r.key === selectedTimeRange)?.description}
+                {viewTypes.find(v => v.key === selectedViewType)?.description}
               </Text>
             </View>
             <Text className="text-xs text-blue-700">
-              {currentData?.timeRange && `Showing data: ${currentData.timeRange}`}
-              {!currentData?.timeRange && 'Loading time range...'}
+              {currentData?.timeRange && `${currentData.timeRange}`}
+              {!currentData?.timeRange && 'Loading data...'}
             </Text>
           </View>
           
