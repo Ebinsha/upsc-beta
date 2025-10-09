@@ -1,10 +1,10 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
-import { Search, Settings, Star, Flame } from 'lucide-react-native';
-import { useState } from 'react';
-import { router } from 'expo-router';
 import { TopicCard } from '@/components/TopicCard';
-import { Topic } from '@/types/api';
 import { useTopics } from '@/hooks/useApiData';
+import { Topic } from '@/types/api';
+import { router } from 'expo-router';
+import { Search, Settings } from 'lucide-react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 
 const { width } = Dimensions.get('window');
@@ -100,9 +100,9 @@ export default function Study() {
           {topics && topics.length > 0 ? (
             <View className="flex-row flex-wrap gap-3">
               {topics
-                .sort((a, b) => b.rating - a.rating)
+                .sort((a, b) => b.priority - a.priority)
                 .map((topic) => {
-                  const cardSize = getCardSize(topic.rating);
+                  const cardSize = getCardSize(topic.priority);
                   
                   return (
                     <TopicCard
@@ -111,13 +111,13 @@ export default function Study() {
                       name={topic.name}
                       priority={topic.priority}
                       rating={topic.rating}
-                      // isHot={topic.isHot}
+                      isHot={topic.isHot}
                       icon={topic.icon}
                       color={topic.color}
                       width={cardSize.width}
                       height={cardSize.height}
                       bottomLeftText=""
-                      bottomRightText={[`${topic.subtopicCount} Subtopics`]}
+                      bottomRightText={[`${topic.subtopicCount} Questions`, topic.difficulty]}
                       onPress={() => handleTopicPress(topic)}
                     />
                   );

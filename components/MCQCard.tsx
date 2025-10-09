@@ -1,4 +1,4 @@
-import { CircleCheck as CheckCircle, Circle, Clock , ThumbsUp, ThumbsDown } from 'lucide-react-native';
+import { CircleCheck as CheckCircle, Circle, Clock, ThumbsDown, ThumbsUp } from 'lucide-react-native';
 
 import { Text, TouchableOpacity, View } from 'react-native';
 
