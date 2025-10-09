@@ -288,8 +288,8 @@ export function useChartData(subtopicId: string, timeRange?: '1Y' | '2Y' | '3Y')
   };
 }
 
-// Helper function to transform API chart data with time range
-function transformChartData(apiData: any, subtopicId: string, timeRange?: '1Y' | '2Y' | '3Y'): ChartData {
+// Helper function to transform API chart data with view type
+function transformChartData(apiData: any, subtopicId: string, viewType?: 'quarterly' | 'halfyearly' | 'all'): ChartData {
   console.log('Raw chart API data:', JSON.stringify(apiData, null, 2));
   
   if (!apiData.range) {
@@ -306,16 +306,16 @@ function transformChartData(apiData: any, subtopicId: string, timeRange?: '1Y' |
     const firstSubtopicId = Object.keys(apiData.range)[0];
     if (firstSubtopicId) {
       console.log(`Using data from first available subtopic: ${firstSubtopicId}`);
-      return processSubtopicData(apiData.range[firstSubtopicId], timeRange);
+      return processSubtopicData(apiData.range[firstSubtopicId], viewType);
     }
     return createEmptyChartData();
   }
 
-  return processSubtopicData(subtopicData, timeRange);
+  return processSubtopicData(subtopicData, viewType);
 }
 
-// Process individual subtopic data with time range filtering
-function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '1Y' | '2Y' | '3Y'): ChartData {
+// Process individual subtopic data with view type filtering
+function processSubtopicData(subtopicData: Record<string, number>, viewType?: 'quarterly' | 'halfyearly' | 'all'): ChartData {
   const entries = Object.entries(subtopicData);
   
   // Sort by date
@@ -325,77 +325,42 @@ function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '
     return dateA.getTime() - dateB.getTime();
   });
 
-  // Filter data based on time range
+  // Use all data - no filtering by time range
   let filteredEntries = entries;
-  if (timeRange) {
-    // Get the last available year from the API data
-    const lastEntry = entries[entries.length - 1];
-    const lastAvailableDate = new Date(lastEntry[0] + '-01');
-    const lastAvailableYear = lastAvailableDate.getFullYear();
-    
-    const cutoffDate = new Date();
-    
-    switch (timeRange) {
-      case '1Y':
-        // Show data from the last available year only
-        cutoffDate.setFullYear(lastAvailableYear - 1);
-        cutoffDate.setMonth(11); // December of previous year
-        break;
-      case '2Y':
-        // Show data from last 2 years based on last available year
-        cutoffDate.setFullYear(lastAvailableYear - 2);
-        cutoffDate.setMonth(11); // December of 2 years ago
-        break;
-      case '3Y':
-        // Show data from last 3 years based on last available year
-        cutoffDate.setFullYear(lastAvailableYear - 3);
-        cutoffDate.setMonth(11); // December of 3 years ago
-        break;
-    }
-    
-    filteredEntries = entries.filter(([date]) => {
-      const entryDate = new Date(date + '-01');
-      return entryDate > cutoffDate;
-    });
-    
-    // If no data after filtering, show at least the last year of available data
-    if (filteredEntries.length === 0) {
-      const lastYearStart = new Date();
-      lastYearStart.setFullYear(lastAvailableYear - 1);
-      lastYearStart.setMonth(0); // January of last year
-      
-      filteredEntries = entries.filter(([date]) => {
-        const entryDate = new Date(date + '-01');
-        return entryDate >= lastYearStart;
-      });
-    }
-  }
 
-  // Create labels with better formatting for different time ranges
+  // Create labels with better formatting for different view types
   const labels = filteredEntries.map(([date], index, array) => {
     const [year, month] = date.split('-');
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    // Smart label display based on data length and time range
+    // Smart label display based on view type
     const shouldShowLabel = () => {
-      if (timeRange === '1Y') {
-        // Show all labels for 1-year view
-        return true;
-      } else if (timeRange === '2Y') {
-        // Show every 2nd month for 2-year view
-        return index % 2 === 0 || index === array.length - 1;
-      } else if (timeRange === '3Y') {
-        // Show every 3rd month for 3-year view
-        return index % 3 === 0 || index === array.length - 1;
+      if (viewType === 'quarterly') {
+        // Show every 3rd month (quarterly)
+        const monthNum = parseInt(month);
+        return monthNum % 3 === 1 || index === array.length - 1; // Jan, Apr, Jul, Oct
+      } else if (viewType === 'halfyearly') {
+        // Show every 6th month (half-yearly)
+        const monthNum = parseInt(month);
+        return monthNum % 6 === 1 || index === array.length - 1; // Jan, Jul
       } else {
-        // Default: show every other month
-        return index % 2 === 0 || index === array.length - 1;
+        // Show all labels for detailed view
+        if (array.length > 24) {
+          // If more than 2 years of data, show every 3rd month
+          return index % 3 === 0 || index === array.length - 1;
+        } else if (array.length > 12) {
+          // If more than 1 year of data, show every 2nd month
+          return index % 2 === 0 || index === array.length - 1;
+        } else {
+          // Show all labels for 1 year or less
+          return true;
+        }
       }
     };
     
     if (shouldShowLabel()) {
-        return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
+      return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
     } else {
       return '';
     }
@@ -415,7 +380,7 @@ function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '
   if (totalQuestions > 0) {
     insights.push({
       title: 'Total Questions',
-      description: `${totalQuestions} questions appeared in the selected time range`,
+      description: `${totalQuestions} questions appeared across all available data`,
       percentage: totalQuestions
     });
   }
@@ -457,7 +422,7 @@ function processSubtopicData(subtopicData: Record<string, number>, timeRange?: '
       color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`
     }],
     timeRange: filteredEntries.length > 0 ? 
-      `${filteredEntries[0]?.[0]} to ${filteredEntries[filteredEntries.length - 1]?.[0]}` : 
+      `All data: ${filteredEntries[0]?.[0]} to ${filteredEntries[filteredEntries.length - 1]?.[0]}` : 
       'No data available',
     insights
   };

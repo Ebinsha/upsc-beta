@@ -24,10 +24,6 @@ export default function TopicJustify() {
   const [showPracticeModal, setShowPracticeModal] = useState(false);
 
   // Use the API hook to fetch chart data
-  const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(
-    params.topicId as string, 
-    selectedTimeRange
-  );
 
   // Use transformed API data
   const currentData = chartApiData;
