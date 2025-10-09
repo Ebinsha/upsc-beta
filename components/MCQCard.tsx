@@ -1,4 +1,5 @@
 import { CircleCheck as CheckCircle, Circle, Clock } from 'lucide-react-native';
+import { ThumbsUp, ThumbsDown } from 'lucide-react-native';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface MCQCardProps {
@@ -23,8 +24,7 @@ export function MCQCard({
   disabled = false,
   questionNumber,
   totalQuestions,
-}: MCQCardProps)
- {
+}: MCQCardProps) {
   const isSelected = (index: number) => {
     return selectedAnswer !== null && selectedAnswer === index;
   };
@@ -78,6 +78,10 @@ export function MCQCard({
     return <Circle size={20} color="#94a3b8" />;
   };
 
+  const handleFeedback = (type: 'up' | 'down') => {
+    console.log(`Feedback ${type} for question ${questionNumber}`);
+    // TODO: Implement API call for feedback
+  };
 
 
   return (
@@ -121,6 +125,25 @@ export function MCQCard({
             </Text>
           </TouchableOpacity>
         ))}
+      </View>
+
+      {/* Feedback Section */}
+      <View className="flex-row justify-between items-center mt-6">
+        <Text className="text-sm text-slate-500">Was this helpful?</Text>
+        <View className="flex-row gap-3">
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-green-100 items-center justify-center"
+            onPress={() => handleFeedback('up')}
+          >
+            <ThumbsUp size={18} color="#10b981" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-red-100 items-center justify-center"
+            onPress={() => handleFeedback('down')}
+          >
+            <ThumbsDown size={18} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
