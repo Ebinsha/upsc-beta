@@ -441,6 +441,60 @@ function calculateGrowthRate(data: number[]): number {
   return Math.round(((lastValue - firstValue) / firstValue) * 100);
 }
 
+// Hook for fetching exam questions
+export function useExamQuestions(questionCount: number = 10) {
+  const { data: rawData, loading, error, refetch } = useApiData<any>({
+    endpoint: '/exam',
+    method: 'POST',
+    body: {
+      no_of_question: questionCount
+    },
+    enabled: questionCount > 0,
+    dependencies: [questionCount]
+  });
+
+  // Transform API data to match Question structure
+  const transformedData = rawData ? transformExamData(rawData) : null;
+
+  return {
+    data: transformedData,
+    loading,
+    error,
+    refetch
+  };
+}
+
+// Helper function to transform API exam data to Question structure
+function transformExamData(apiData: any): Question[] {
+  console.log('Raw exam API data:', JSON.stringify(apiData, null, 2));
+  
+  if (!apiData.questions || !Array.isArray(apiData.questions)) {
+    console.log('No questions found in API response');
+    return [];
+  }
+
+  return apiData.questions.map((q: any) => ({
+    id: q.id.toString(),
+    question: q.Question,
+    additionalQuestion: q.Additional_Question || '',
+    statement: q.Statement || [],
+    options: q.Options || [],
+    correctAnswer: (q.Answer - 1), // Convert from 1-based to 0-based indexing
+    explanation: q.Explanation || '',
+    context: `This question is from ${q.labelled_topic || q.topic_std || 'General Studies'}`,
+    references: [
+      {
+        title: q.labelled_topic || 'Topic Reference',
+        type: 'Article' as const,
+        description: `Study material for ${q.topic_std || 'this topic'}`
+      }
+    ],
+    difficulty: 'Medium' as const,
+    topic: q.topic_std || 'General Studies',
+    subtopic: q.labelled_topic || 'General'
+  }));
+}
+
 // Create empty chart data for fallback
 function createEmptyChartData(): ChartData {
   return {

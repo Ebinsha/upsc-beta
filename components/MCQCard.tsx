@@ -4,6 +4,8 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 interface MCQCardProps {
   question: string;
+  additionalQuestion?: string;
+  statement?: string[];
   options: string[];
   selectedAnswer: number | null;
   onSelectAnswer: (index: number) => void;
@@ -16,6 +18,8 @@ interface MCQCardProps {
 
 export function MCQCard({
   question,
+  additionalQuestion,
+  statement,
   options,
   selectedAnswer,
   onSelectAnswer,
@@ -100,9 +104,29 @@ export function MCQCard({
       </View>
 
       {/* Question Text */}
-      <Text className="text-lg font-semibold text-slate-800 mb-6 leading-6">
-        {question}
-      </Text>
+      <View className="mb-6">
+        <Text className="text-lg font-semibold text-slate-800 mb-3 leading-6">
+          {question}
+        </Text>
+        
+        {/* Statement Section */}
+        {statement && statement.length > 0 && (
+          <View className="mb-3">
+            {statement.map((stmt, index) => (
+              <Text key={index} className="text-base text-slate-700 mb-2 leading-5">
+                {stmt}
+              </Text>
+            ))}
+          </View>
+        )}
+        
+        {/* Additional Question */}
+        {additionalQuestion && (
+          <Text className="text-base font-medium text-slate-800 leading-5">
+            {additionalQuestion}
+          </Text>
+        )}
+      </View>
 
       {/* Options */}
       <View className="gap-3">
