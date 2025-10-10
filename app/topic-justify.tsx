@@ -1,7 +1,6 @@
-import { PracticeModal } from '@/components/PracticeModal';
 import { useChartData } from '@/hooks/useApiData';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Calendar, Clock, Play, Star, Target, ZoomIn } from 'lucide-react-native';
+import { ArrowLeft, Calendar, Play, Star, ZoomIn } from 'lucide-react-native';
 import { useState } from 'react';
 import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
@@ -11,6 +10,7 @@ const { width } = Dimensions.get('window');
 export default function TopicJustify() {
   const params = useLocalSearchParams();
   const {
+    topicId,
     topicName,
     topicColor,
     rating,
@@ -21,7 +21,6 @@ export default function TopicJustify() {
 
   const [selectedViewType, setSelectedViewType] = useState<'quarterly' | 'halfyearly' | 'Alldata'>('quarterly');
   const [isZoomed, setIsZoomed] = useState(false);
-  const [showPracticeModal, setShowPracticeModal] = useState(false);
 
   // Use the API hook to fetch chart data
   const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(
@@ -50,17 +49,18 @@ export default function TopicJustify() {
     }
   ];
 
-  const practiceOptions = [
-    { title: 'Quick Practice', questions: 10, time: '15 min', difficulty: 'Easy' },
-    { title: 'Standard Practice', questions: 25, time: '35 min', difficulty: 'Medium' },
-    { title: 'Advanced Practice', questions: 50, time: '60 min', difficulty: 'Hard' },
-  ];
+  // const practiceOptions = [
+  //   { title: 'Quick Practice', questions: 10, time: '15 min', difficulty: 'Easy' },
+  //   { title: 'Standard Practice', questions: 25, time: '35 min', difficulty: 'Medium' },
+  //   { title: 'Advanced Practice', questions: 50, time: '60 min', difficulty: 'Hard' },
+  // ];
 
   const viewTypes = [
     { key: 'quarterly' as const, label: 'Quarterly', description: 'Show data points every 3 months' },
     { key: 'halfyearly' as const, label: 'Half yearly', description: 'Show data points every 6 months' },
     { key: 'Alldata' as const, label: 'All data', description: 'All available trend pattern' }
   ];
+
 
   return (
     <View className="flex-1 bg-slate-50">
@@ -327,7 +327,16 @@ export default function TopicJustify() {
       <View className="absolute bottom-6 left-0 right-0 items-center">
         <TouchableOpacity
           className="bg-blue-500 px-8 py-4 items-center justify-center shadow-lg flex-row gap-2"
-          onPress={() => setShowPracticeModal(true)}
+          onPress={() => router.push({
+            pathname: '/practice-test',
+            params: {
+              testTitle: `${topicName} - Standard Practice`,
+              duration: '35',
+              difficulty: 'Medium',
+              questionsCount: '25',
+              subtopicId: topicId
+            }
+          })}
           style={{
             borderRadius: 50,
             elevation: 8,
@@ -341,13 +350,6 @@ export default function TopicJustify() {
           <Text className="text-white font-semibold text-base">Start Practice</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Practice Modal */}
-      <PracticeModal
-        visible={showPracticeModal}
-        onClose={() => setShowPracticeModal(false)}
-        topicName={topicName as string}
-      />
     </View>
   );
 }

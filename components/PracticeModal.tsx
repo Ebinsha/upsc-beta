@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, Modal, Dimensions } from 'react-native';
-import { X, Play, Clock, Target } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { Clock, Play, Target, X } from 'lucide-react-native';
+import { Dimensions, Modal, Text, TouchableOpacity, View } from 'react-native';
 
 const { height } = Dimensions.get('window');
 
