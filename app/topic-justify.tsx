@@ -34,18 +34,18 @@ export default function TopicJustify() {
 
   const recommendations = [
     {
-      title: 'High Frequency Topic',
-      description: 'This topic appeared in 78% of recent exams',
+      title: 'High Frequency',
+      description: 'This topic-API data',
       score: 85
     },
     {
-      title: 'Trending Upward',
-      description: 'Questions from this topic increased by 45% this year',
+      title: 'Trending',
+      description: 'API data',
       score: 92
     },
     {
-      title: 'Score Impact',
-      description: 'Students who master this topic score 23% higher',
+      title: 'Impact',
+      description: 'lorum ipsum API data',
       score: 78
     }
   ];
@@ -253,7 +253,7 @@ export default function TopicJustify() {
           )}
           
           {/* Data Insights */}
-          <View className="mt-4 p-3 bg-slate-50 rounded-xl">
+          {/* <View className="mt-4 p-3 bg-slate-50 rounded-xl">
             <Text className="text-sm font-semibold text-slate-800 mb-2">Key Insights:</Text>
             <View className="gap-1">
               {currentData?.insights && currentData.insights.length > 0 ? (
@@ -267,7 +267,7 @@ export default function TopicJustify() {
                 <Text className="text-xs text-slate-600">• No insights available for this topic</Text>
               )}
             </View>
-          </View>
+          </View> */}
         </View>
 
         <View className="mx-5 mb-5">
@@ -287,8 +287,8 @@ export default function TopicJustify() {
             </View>
           ))}
         </View>
-
-        <View className="mx-5 mb-10">
+         {/* Practice section */}
+        {/* <View className="mx-5 mb-10">
           <Text className="text-lg font-bold text-slate-800 mb-4">Start Practicing</Text>
           
           {practiceOptions.map((option, index) => (
@@ -320,7 +320,7 @@ export default function TopicJustify() {
               </View>
             </TouchableOpacity>
           ))}
-        </View>
+        </View> */}
       </ScrollView>
 
        {/* Floating Practice Button */}
