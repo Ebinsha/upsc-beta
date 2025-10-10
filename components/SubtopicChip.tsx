@@ -55,23 +55,23 @@ export function SubtopicChip({
       
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-3">
-          <View className="flex-row items-center gap-1">
+          {/* <View className="flex-row items-center gap-1">
             <Star size={12} color="#fbbf24" fill="#fbbf24" />
             <Text className="text-xs font-medium text-slate-600">{rating}</Text>
-          </View>
+          </View> */}
           
           <Text className="text-xs text-slate-500">
             {questionsCount} Q's
           </Text>
           
-          <View className={`px-2 py-0.5 rounded-md ${getDifficultyColor()}`}>
+          {/* <View className={`px-2 py-0.5 rounded-md ${getDifficultyColor()}`}>
             <Text className="text-xs font-medium">{difficulty}</Text>
-          </View>
+          </View> */}
         </View>
         
-        <View className="bg-slate-200 px-2 py-0.5 rounded-md">
+        {/* <View className="bg-slate-200 px-2 py-0.5 rounded-md">
           <Text className="text-xs font-semibold text-slate-700">P{priority}</Text>
-        </View>
+        </View> */}
       </View>
     </TouchableOpacity>
   );
