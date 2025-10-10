@@ -42,11 +42,11 @@ export interface ChartData {
     color?: (opacity: number) => string;
   }[];
   timeRange: string;
-  insights: {
-    title: string;
-    description: string;
-    percentage?: number;
-  }[];
+//   insights: {
+//     title: string;
+//     description: string;
+//     percentage?: number;
+//   }[];
 }
 
 export interface TopicsResponse extends ApiResponse<Topic[]> {}

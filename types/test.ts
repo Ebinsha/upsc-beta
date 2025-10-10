@@ -11,6 +11,7 @@ export interface Question {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   topic: string;
   subtopic: string;
+  keyLearnings: string;
 }
 
 export interface Reference {

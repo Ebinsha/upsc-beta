@@ -475,6 +475,8 @@ function transformExamData(apiData: any): Question[] {
     return [];
   }
 
+
+
   return apiData.questions.map((q: any) => ({
     id: q.id.toString(),
     question: q.Question,
@@ -483,18 +485,21 @@ function transformExamData(apiData: any): Question[] {
     options: q.Options || [],
     correctAnswer: q.Answer, // 0-based indexing API
     explanation: q.Explanation || '',
-    context: `This question is from ${q.labelled_topic || q.topic_std || 'General Studies'}`,
+    // context: `This question is from ${q.labelled_topic || q.topic_std || 'General Studies'}`,
     references: [
       {
         title: q.labelled_topic || 'Topic Reference',
-        type: 'Article' as const,
+        // type: 'Article' as const,
         description: `Study material for ${q.topic_std || 'this topic'}`
       }
     ],
     difficulty: 'Medium' as const,
     topic: q.topic_std || 'General Studies',
-    subtopic: q.labelled_topic || 'General'
-  }));
+    subtopic: q.labelled_topic || 'General',
+  }),
+ 
+)
+
 }
 
 // Create empty chart data for fallback
@@ -507,10 +512,10 @@ function createEmptyChartData(): ChartData {
       color: (opacity = 1) => `rgba(156, 163, 175, ${opacity})`
     }],
     timeRange: 'No data available',
-    insights: [{
-      title: 'No Data',
-      description: 'No chart data available for this topic',
-      percentage: 0
-    }]
+    // insights: [{
+    //   title: 'No Data',
+    //   description: 'No chart data available for this topic',
+    //   percentage: 0
+    // }]
   };
 }

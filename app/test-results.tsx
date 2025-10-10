@@ -1,105 +1,21 @@
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Trophy, Clock, Target, BookOpen, ExternalLink, CircleCheck as CheckCircle, Circle as XCircle } from 'lucide-react-native';
 import { MCQCard } from '@/components/MCQCard';
-import { Question, TestAnswer } from '@/types/test';
+import { useExamQuestions } from '@/hooks/useApiData';
+import { TestAnswer } from '@/types/test';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeft, CircleCheck as CheckCircle, Clock, ExternalLink, Trophy, Circle as XCircle } from 'lucide-react-native';
+import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-// Mock questions data (same as practice-test)
-const mockQuestions: Question[] = [
-  {
-    id: '1',
-    question: 'Which of the following is the primary cause of climate change according to the IPCC reports?',
-    options: [
-      'Natural climate variations',
-      'Solar radiation changes',
-      'Human activities, particularly greenhouse gas emissions',
-      'Volcanic eruptions'
-    ],
-    correctAnswer: 2,
-    explanation: 'According to the Intergovernmental Panel on Climate Change (IPCC), human activities, particularly the emission of greenhouse gases like CO2, CH4, and N2O, are the primary drivers of climate change since the mid-20th century.',
-    context: 'This question tests understanding of climate science fundamentals, which is crucial for environmental policy and UPSC preparation.',
-    references: [
-      {
-        title: 'IPCC Sixth Assessment Report',
-        type: 'Article',
-        url: 'https://www.ipcc.ch/ar6-syr/',
-        description: 'Comprehensive report on climate change science and impacts'
-      },
-      {
-        title: 'Climate Change and India - NCERT',
-        type: 'Book',
-        description: 'Detailed coverage of climate change impacts on India'
-      }
-    ],
-    difficulty: 'Medium',
-    topic: 'Environment',
-    subtopic: 'Climate Change'
-  },
-  {
-    id: '2',
-    question: 'The Paris Agreement aims to limit global temperature rise to:',
-    options: [
-      'Below 1.5°C above pre-industrial levels',
-      'Well below 2°C, with efforts to limit to 1.5°C above pre-industrial levels',
-      'Below 3°C above pre-industrial levels',
-      'Below 2.5°C above pre-industrial levels'
-    ],
-    correctAnswer: 1,
-    explanation: 'The Paris Agreement aims to strengthen the global response to climate change by keeping global temperature rise this century well below 2°C above pre-industrial levels and pursuing efforts to limit the temperature increase even further to 1.5°C.',
-    context: 'Understanding international climate agreements is essential for questions related to India\'s climate commitments and global environmental governance.',
-    references: [
-      {
-        title: 'Paris Agreement - UNFCCC',
-        type: 'Website',
-        url: 'https://unfccc.int/process-and-meetings/the-paris-agreement',
-        description: 'Official text and explanation of the Paris Agreement'
-      },
-      {
-        title: 'India and Paris Agreement',
-        type: 'Article',
-        description: 'India\'s commitments and progress under the Paris Agreement'
-      }
-    ],
-    difficulty: 'Easy',
-    topic: 'Environment',
-    subtopic: 'International Agreements'
-  },
-  {
-    id: '3',
-    question: 'Which of the following is NOT a component of India\'s Nationally Determined Contributions (NDCs)?',
-    options: [
-      'Reduce emissions intensity of GDP by 33-35% by 2030',
-      'Achieve 40% cumulative electric power capacity from non-fossil fuel sources by 2030',
-      'Create additional carbon sink of 2.5-3 billion tonnes of CO2 equivalent',
-      'Achieve net-zero emissions by 2025'
-    ],
-    correctAnswer: 3,
-    explanation: 'India has committed to achieve net-zero emissions by 2070, not 2025. The other three options are correct components of India\'s NDCs submitted under the Paris Agreement.',
-    context: 'This question tests knowledge of India\'s specific climate commitments, which frequently appear in current affairs and environmental policy questions.',
-    references: [
-      {
-        title: 'India\'s Updated NDC',
-        type: 'Article',
-        description: 'Official document outlining India\'s climate commitments'
-      },
-      {
-        title: 'Net Zero Commitments by Countries',
-        type: 'Website',
-        description: 'Comparison of net-zero targets by different countries'
-      }
-    ],
-    difficulty: 'Hard',
-    topic: 'Environment',
-    subtopic: 'Climate Policy'
-  }
-];
-
 export default function TestResults() {
   const params = useLocalSearchParams();
-  const { score, totalQuestions, timeTaken, testTitle, answersData } = params;
+  const { score, totalQuestions, timeTaken, testTitle, answersData , subtopicId} = params;
   
+  // Fetch the same questions that were used in the test
+  const { data: questions } = useExamQuestions(subtopicId as string);
+  
+  console.log({questions});
+
   const answers: TestAnswer[] = answersData ? JSON.parse(answersData as string) : [];
   const scoreNum = parseInt(score as string);
   const totalNum = parseInt(totalQuestions as string);
@@ -188,13 +104,15 @@ export default function TestResults() {
         <View className="mx-5 mb-5">
           <Text className="text-xl font-bold text-slate-800 mb-4">Question Review</Text>
           
-          {mockQuestions.map((question, index) => {
+          {questions?.map((question, index) => {
             const answer = answers.find(a => a.questionId === question.id);
             
             return (
               <View key={question.id} className="mb-6">
                 <MCQCard
                   question={question.question}
+                  additionalQuestion={question.additionalQuestion}
+                  statement={question.statement}
                   options={question.options}
                   selectedAnswer={answer?.selectedAnswer || null}
                   onSelectAnswer={() => {}}
@@ -202,7 +120,7 @@ export default function TestResults() {
                   correctAnswer={question.correctAnswer}
                   disabled={true}
                   questionNumber={index + 1}
-                  totalQuestions={mockQuestions.length}
+                  totalQuestions={questions.length}
                 />
                 
                 {/* Explanation */}
@@ -214,12 +132,12 @@ export default function TestResults() {
                     {question.explanation}
                   </Text>
                   
-                  <Text className="text-sm font-semibold text-blue-800 mb-2">
+                  {/* <Text className="text-sm font-semibold text-blue-800 mb-2">
                     Why this question matters:
                   </Text>
                   <Text className="text-sm text-blue-700 leading-5">
                     {question.context}
-                  </Text>
+                  </Text> */}
                 </View>
                 
                 {/* References */}
@@ -237,9 +155,10 @@ export default function TestResults() {
                         <Text className="text-sm font-semibold text-slate-800 mb-1">
                           {ref.title}
                         </Text>
+                        { ref.type && 
                         <Text className="text-xs text-slate-500 mb-1">
                           {ref.type}
-                        </Text>
+                        </Text>}
                         <Text className="text-xs text-slate-600 leading-4">
                           {ref.description}
                         </Text>
@@ -253,6 +172,18 @@ export default function TestResults() {
               </View>
             );
           })}
+
+           <Text className="text-base font-semibold text-slate-800 mb-3">
+                    🔑 Key Learnings
+                  </Text>
+                  <TouchableOpacity
+                    className="flex-row items-center justify-between p-3 bg-white rounded-xl"
+                  >
+                    <View className="flex-1">
+                      <Text className="text-sm text-slate-600 leading-5">
+                        {questions?.keyLearnings}</Text>
+                    </View>
+                  </TouchableOpacity>
         </View>
 
         {/* Action Buttons */}

@@ -106,7 +106,8 @@ export default function PracticeTest() {
                 totalQuestions: questions?.length.toString() || '0',
                 timeTaken: totalTime.toString(),
                 testTitle: testTitle as string,
-                answersData: JSON.stringify(answers)
+                answersData: JSON.stringify(answers),
+                subtopicId: subtopicId as string
               }
             });
           }
