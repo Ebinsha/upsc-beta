@@ -173,7 +173,7 @@ export default function TestResults() {
             );
           })}
 
-           <Text className="text-base font-semibold text-slate-800 mb-3">
+           {/* <Text className="text-base font-semibold text-slate-800 mb-3">
                     🔑 Key Learnings
                   </Text>
                   <TouchableOpacity
@@ -183,7 +183,7 @@ export default function TestResults() {
                       <Text className="text-sm text-slate-600 leading-5">
                         {questions?.keyLearnings}</Text>
                     </View>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
         </View>
 
         {/* Action Buttons */}
