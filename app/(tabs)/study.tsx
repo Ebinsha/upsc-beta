@@ -44,14 +44,17 @@ export default function Study() {
   return (
     <View className="flex-1 bg-slate-50">
       <View className="bg-white pt-16 px-5 pb-5 border-b border-slate-200">
-        <View className="flex-row justify-between items-center mb-5">
-          <Text className="text-3xl font-bold text-slate-800">Smart Study</Text>
+
+         <Text className="text-3xl font-bold text-slate-800">Smart Study</Text>
+          <Text className="text-base text-slate-500">AI powered topic distribution</Text>
+        {/* <View className="flex-row justify-between items-center mb-5">
+         
           <TouchableOpacity>
             <Settings size={24} color="#64748b" />
           </TouchableOpacity>
-        </View>
+        </View> */}
         
-        <View className="flex-row items-center bg-slate-100 rounded-xl px-4 py-3 gap-3">
+        {/* <View className="flex-row items-center bg-slate-100 rounded-xl px-4 py-3 gap-3">
           <Search size={20} color="#9ca3af" />
           <TextInput
             className="flex-1 text-base text-slate-800"
@@ -60,7 +63,7 @@ export default function Study() {
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-        </View>
+        </View> */}
       </View>
 
       {loading && !refreshing ? (

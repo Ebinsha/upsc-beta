@@ -145,7 +145,7 @@ function transformTopicsData(apiData: Record<string, { subtopic: { number: numbe
   const topicIcons = ['🌱', '📚', '🌍', '💰', '⚖️', '🏛️', '🎭', '🔬', '🏥', '🚀', '🎨', '📊'];
   const colors = [
     '#F5A3A3', '#A3C3F5', '#7DB8E8', '#E67E22', '#C39BD3', '#85C1E9',
-    '#AA4A44', '#82E0AA', '#D7BDE2', '#F9E79F', '#AED6F1', '#A9DFBF'
+    '#F1b3c9', '#82E0AA', '#D7BDE2', '#F9E79F', '#AED6F1', '#A9DFBF'
   ];
 
   return Object.entries(apiData).map(([topicName, data], index) => {
