@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { TopicCard } from '@/components/TopicCard';
 import { Topic } from '@/types/api';
 import { useTopics } from '@/hooks/useApiData';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
