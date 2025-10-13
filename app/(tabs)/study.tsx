@@ -1,27 +1,59 @@
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
-import { Search, Settings, Star, Flame } from 'lucide-react-native';
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
 import { TopicCard } from '@/components/TopicCard';
 import { Topic } from '@/types/api';
 import { useTopics } from '@/hooks/useApiData';
 
+import OnboardingScreen from '@/components/OnboardingScreen';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 const { width } = Dimensions.get('window');
+const ONBOARDING_KEY = 'smart_study_onboarding_completed';
+
 
 export default function Study() {
-  const [searchQuery, setSearchQuery] = useState('');
-  
+  const [showOnboarding, setShowOnboarding] = useState(true);
   // Use the API hook to fetch topics
   const { data: topics, loading, error, refetch } = useTopics();
+    const [isLoadingOnboard, setIsLoadingOnboard] = useState(true);
   
   const [refreshing, setRefreshing] = useState(false);
+  useEffect(() => {
+    checkOnboardingStatus();
+  }, []);
+
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const completed = await AsyncStorage.getItem(ONBOARDING_KEY);
+      setShowOnboarding(!completed);
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+    } finally {
+      setIsLoadingOnboard(false);
+    }
+  };
+
+  const completeOnboarding = async () => {
+    try {
+      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error('Error saving onboarding status:', error);
+    }
+  };
+
 
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
   };
+
+  
 
   const getCardSize = (priority: number) => {
     if (priority >= 4) return { width: width - 40, height: 140 }; // Large
@@ -39,6 +71,30 @@ export default function Study() {
       }
     });
   };
+
+if (isLoadingOnboard) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#3b82f6" />
+          <Text className="text-base text-slate-600 mt-4">Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (showOnboarding) {
+    return (
+      <SafeAreaView className="flex-1">
+        <OnboardingScreen onComplete={completeOnboarding} />
+      </SafeAreaView>
+    );
+  }
+
+
+
+
+
 
 
   return (

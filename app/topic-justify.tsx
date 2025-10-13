@@ -24,26 +24,11 @@ export default function TopicJustify() {
     params.topicId as string
   );
 
+  console.log({chartApiData})
   // Use transformed API data
   const currentData = chartApiData;
 
-  const recommendations = [
-    {
-      title: 'High Frequency',
-      description: 'This topic-API data',
-      score: 85
-    },
-    {
-      title: 'Trending',
-      description: 'API data',
-      score: 92
-    },
-    {
-      title: 'Impact',
-      description: 'lorum ipsum API data',
-      score: 78
-    }
-  ];
+  
 
   // const practiceOptions = [
   //   { title: 'Quick Practice', questions: 10, time: '15 min', difficulty: 'Easy' },
@@ -210,7 +195,7 @@ export default function TopicJustify() {
                 labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
                 propsForVerticalLabels: {
                   fontSize: 10,
-                  rotation: isZoomed ? 0 : -45,
+                  rotation: isZoomed ? 0 : -30,
                 },
                 propsForHorizontalLabels: {
                   fontSize: 10,
