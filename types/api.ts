@@ -42,6 +42,12 @@ export interface ChartData {
     color?: (opacity: number) => string;
   }[];
   timeRange: string;
+  forecast?: {
+    prefix?: string;
+    relatives?: string[];
+    trend?: string;
+    impact?: string; // Added for impact score
+  };
 //   insights: {
 //     title: string;
 //     description: string;

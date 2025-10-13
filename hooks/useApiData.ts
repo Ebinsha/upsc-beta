@@ -266,7 +266,7 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
     };
   });
 }
-export function useChartData(subtopicId: string, timeRange?: '1Y' | '2Y' | '3Y') {
+export function useChartData(subtopicId: string, ) {
   const { data: rawData, loading, error, refetch } = useApiData<any>({
     endpoint: '/line_chart',
     method: 'POST',
@@ -275,11 +275,11 @@ export function useChartData(subtopicId: string, timeRange?: '1Y' | '2Y' | '3Y')
     
     },
     enabled: !!subtopicId,
-    dependencies: [subtopicId, timeRange]
+    dependencies: [subtopicId]
   });
 
   // Transform API data to chart format
-  const transformedData = rawData ? transformChartData(rawData, subtopicId, timeRange) : null;
+  const transformedData = rawData ? transformChartData(rawData, subtopicId) : null;
 
   return {
     data: transformedData,
@@ -289,8 +289,8 @@ export function useChartData(subtopicId: string, timeRange?: '1Y' | '2Y' | '3Y')
   };
 }
 
-// Helper function to transform API chart data with view type
-function transformChartData(apiData: any, subtopicId: string, viewType?: 'quarterly' | 'halfyearly' | 'all'): ChartData {
+// Helper function to transform API chart data with half yearly data
+function transformChartData(apiData: any, subtopicId: string): ChartData {
   console.log('Raw chart API data:', JSON.stringify(apiData, null, 2));
   
   if (!apiData.range) {
@@ -300,120 +300,96 @@ function transformChartData(apiData: any, subtopicId: string, viewType?: 'quarte
 
   // Get the data for the specific subtopic ID
   const subtopicData = apiData.range[subtopicId];
-  
+
   if (!subtopicData) {
     console.log(`No data found for subtopic ID: ${subtopicId}`);
     // Try to get the first available subtopic data
     const firstSubtopicId = Object.keys(apiData.range)[0];
     if (firstSubtopicId) {
       console.log(`Using data from first available subtopic: ${firstSubtopicId}`);
-      return processSubtopicData(apiData.range[firstSubtopicId], viewType);
+      return processHalfYearlyData(apiData.range[firstSubtopicId], apiData.forecast);
     }
     return createEmptyChartData();
   }
 
-  return processSubtopicData(subtopicData, viewType);
+  return processHalfYearlyData(subtopicData, apiData.forecast);
 }
 
-// Process individual subtopic data with view type filtering
-function processSubtopicData(subtopicData: Record<string, number>, viewType?: 'quarterly' | 'halfyearly' | 'all'): ChartData {
+function processHalfYearlyData(subtopicData: Record<string, number>, forecast: any): ChartData {
   const entries = Object.entries(subtopicData);
   
   // Sort by date
   entries.sort(([a], [b]) => {
-    const dateA = new Date(a + '-01');
-    const dateB = new Date(b + '-01');
-    return dateA.getTime() - dateB.getTime();
+    const [yearA, halfA] = a.split('-');
+    const [yearB, halfB] = b.split('-');
+    return yearA === yearB ? 
+      (halfA === 'H1' ? -1 : 1) : 
+      parseInt(yearA) - parseInt(yearB);
   });
 
-  // Use all data - no filtering by time range
-  let filteredEntries = entries;
-
-  // Create labels with better formatting for different view types
-  const labels = filteredEntries.map(([date], index, array) => {
-    const [year, month] = date.split('-');
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    // Smart label display based on view type
-    const shouldShowLabel = () => {
-      if (viewType === 'quarterly') {
-        // Show every 3rd month (quarterly)
-        const monthNum = parseInt(month);
-        return monthNum % 3 === 1 || index === array.length - 1; // Jan, Apr, Jul, Oct
-      } else if (viewType === 'halfyearly') {
-        // Show every 6th month (half-yearly)
-        const monthNum = parseInt(month);
-        return monthNum % 6 === 1 || index === array.length - 1; // Jan, Jul
-      } else {
-        // Show all labels for detailed view
-        if (array.length > 24) {
-          // If more than 2 years of data, show every 3rd month
-          return index % 3 === 0 || index === array.length - 1;
-        } else if (array.length > 12) {
-          // If more than 1 year of data, show every 2nd month
-          return index % 2 === 0 || index === array.length - 1;
-        } else {
-          // Show all labels for 1 year or less
-          return true;
-        }
-      }
-    };
-    
-    if (shouldShowLabel()) {
-      return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
-    } else {
-      return '';
-    }
+  // Create formatted labels
+  const labels = entries.map(([period]) => {
+    const [year, half] = period.split('-');
+    return `${half === 'H1' ? 'Jan-Jun' : 'Jul-Dec'} ${year.slice(2)}`;
   });
 
-  const data = filteredEntries.map(([, value]) => value);
+  const data = entries.map(([, value]) => value);
   
-  // Calculate insights
-  const totalQuestions = data.reduce((sum, val) => sum + val, 0);
-  const maxValue = Math.max(...data);
-  const avgValue = totalQuestions / data.length;
-  const nonZeroMonths = data.filter(val => val > 0).length;
-  const growthRate = calculateGrowthRate(data);
+  // // Calculate insights
+  // const totalQuestions = data.reduce((sum, val) => sum + val, 0);
+  // const maxValue = Math.max(...data);
+  // const avgValue = totalQuestions / data.length;
+  // const nonZeroHalves = data.filter(val => val > 0).length;
+  // const growthRate = calculateGrowthRate(data);
 
-  const insights = [];
+  // const insights = [];
+
+   // Add dummy impact score based on data patterns
+  const nonZeroCount = data.filter(v => v > 0).length;
+  const totalPeriods = data.length;
+  let impactScore = 'Medium';
   
-  if (totalQuestions > 0) {
-    insights.push({
-      title: 'Total Questions',
-      description: `${totalQuestions} questions appeared across all available data`,
-      percentage: totalQuestions
-    });
+  if (nonZeroCount / totalPeriods > 0.5) {
+    impactScore = 'Very High';
+  } else if (nonZeroCount / totalPeriods > 0.3) {
+    impactScore = 'High';
   }
 
-  if (maxValue > 0) {
-    const maxIndex = data.indexOf(maxValue);
-    if (labels[maxIndex]) {
-      insights.push({
-        title: 'Peak Activity',
-        description: `Highest activity in ${labels[maxIndex]} with ${maxValue} questions`,
-        percentage: Math.round((maxValue / totalQuestions) * 100)
-      });
-    }
-  }
+  
+  // if (totalQuestions > 0) {
+  //   insights.push({
+  //     title: 'Total Questions',
+  //     description: `${totalQuestions} questions appeared in total`,
+  //     percentage: totalQuestions
+  //   });
+  // }
 
-  if (nonZeroMonths > 0) {
-    insights.push({
-      title: 'Active Periods',
-      description: `Questions appeared in ${nonZeroMonths} out of ${data.length} time periods`,
-      percentage: Math.round((nonZeroMonths / data.length) * 100)
-    });
-  }
+  // if (maxValue > 0) {
+  //   const maxIndex = data.indexOf(maxValue);
+  //   insights.push({
+  //     title: 'Peak Activity',
+  //     description: `Highest activity in ${labels[maxIndex]} with ${maxValue} questions`,
+  //     percentage: Math.round((maxValue / totalQuestions) * 100)
+  //   });
+  // }
 
-  if (growthRate !== 0) {
-    insights.push({
-      title: 'Trend Analysis',
-      description: growthRate > 0 ? 
-        `Increasing trend with ${Math.abs(growthRate)}% growth` : 
-        `Decreasing trend with ${Math.abs(growthRate)}% decline`,
-      percentage: Math.abs(growthRate)
-    });
-  }
+  // if (recommendation?.trend) {
+  //   insights.push({
+  //     title: 'Trend Analysis',
+  //     description: recommendation.trend,
+  //     percentage: Math.round((nonZeroHalves / entries.length) * 100)
+  //   });
+  // }
+
+  // if (recommendation?.impact) {
+  //   insights.push({
+  //     title: 'Impact Assessment',
+  //     description: `Impact Level: ${recommendation.impact}`,
+  //     percentage: recommendation.impact === 'Very High' ? 90 : 
+  //                recommendation.impact === 'High' ? 75 :
+  //                recommendation.impact === 'Medium' ? 50 : 25
+  //   });
+  // }
 
   return {
     labels,
@@ -422,10 +398,15 @@ function processSubtopicData(subtopicData: Record<string, number>, viewType?: 'q
       strokeWidth: 3,
       color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`
     }],
-    timeRange: filteredEntries.length > 0 ? 
-      `All data: ${filteredEntries[0]?.[0]} to ${filteredEntries[filteredEntries.length - 1]?.[0]}` : 
+    timeRange: entries.length > 0 ? 
+      `${entries[0][0]} to ${entries[entries.length - 1][0]}` : 
       'No data available',
-    insights
+   forecast: {
+       prefix: forecast?.prefix,
+      relatives: forecast?.relatives,
+      trend: forecast?.trend,
+      impact: impactScore // Add the impact score
+    }
   };
 }
 

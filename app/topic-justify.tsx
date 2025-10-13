@@ -1,6 +1,6 @@
 import { useChartData } from '@/hooks/useApiData';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Calendar, Play, Star, ZoomIn } from 'lucide-react-native';
+import { ArrowLeft, Calendar, Lightbulb, Play, Star, Target, TrendingUp, ZoomIn } from 'lucide-react-native';
 import { useState } from 'react';
 import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
@@ -14,18 +14,14 @@ export default function TopicJustify() {
     topicName,
     topicColor,
     rating,
-    questionsCount,
-    difficulty,
-    isHot
+    questionsCount, 
   } = params;
 
-  const [selectedViewType, setSelectedViewType] = useState<'quarterly' | 'halfyearly' | 'Alldata'>('quarterly');
   const [isZoomed, setIsZoomed] = useState(false);
 
   // Use the API hook to fetch chart data
   const { data: chartApiData, loading: chartLoading, error: chartError } = useChartData(
-    params.topicId as string, 
-    selectedViewType
+    params.topicId as string
   );
 
   // Use transformed API data
@@ -55,11 +51,11 @@ export default function TopicJustify() {
   //   { title: 'Advanced Practice', questions: 50, time: '60 min', difficulty: 'Hard' },
   // ];
 
-  const viewTypes = [
-    { key: 'quarterly' as const, label: 'Quarterly', description: 'Show data points every 3 months' },
-    { key: 'halfyearly' as const, label: 'Half yearly', description: 'Show data points every 6 months' },
-    { key: 'Alldata' as const, label: 'All data', description: 'All available trend pattern' }
-  ];
+  // const viewTypes = [
+  //   { key: 'quarterly' as const, label: 'Quarterly', description: 'Show data points every 3 months' },
+  //   { key: 'halfyearly' as const, label: 'Half yearly', description: 'Show data points every 6 months' },
+  //   { key: 'Alldata' as const, label: 'All data', description: 'All available trend pattern' }
+  // ];
 
 
   return (
@@ -104,7 +100,7 @@ export default function TopicJustify() {
           </View>
           
           {/* View Type Selector */}
-          <View className="flex-row bg-slate-100 rounded-xl p-1 mb-4">
+          {/* <View className="flex-row bg-slate-100 rounded-xl p-1 mb-4">
             {viewTypes.map((viewType) => (
               <TouchableOpacity
                 key={viewType.key}
@@ -121,9 +117,9 @@ export default function TopicJustify() {
               </TouchableOpacity>
             ))}
           </View>
-          
+           */}
          {/* View Description */}
-          <View className="bg-blue-50 p-3 rounded-xl mb-4">
+          {/* <View className="bg-blue-50 p-3 rounded-xl mb-4">
             <View className="flex-row items-center gap-2 mb-1">
               <Calendar size={16} color="#3b82f6" />
               <Text className="text-sm font-semibold text-blue-800">
@@ -134,7 +130,22 @@ export default function TopicJustify() {
               {currentData?.timeRange && `${currentData.timeRange}`}
               {!currentData?.timeRange && 'Loading data...'}
             </Text>
+          </View> */}
+ <View className="bg-blue-50 p-3 rounded-xl mb-4">
+            <View className="flex-row items-center gap-2 mb-1">
+              <Calendar size={16} color="#3b82f6" />
+              <Text className="text-sm font-semibold text-blue-800">
+                Half Yearly Question Frequency
+              </Text>
+            </View>
+            <Text className="text-xs text-blue-700">
+              {currentData?.timeRange && `${currentData.timeRange}`}
+              {!currentData?.timeRange && 'Loading data...'}
+            </Text>
           </View>
+
+
+
           
           {/* Enhanced Chart */}
           <ScrollView 
@@ -273,7 +284,7 @@ export default function TopicJustify() {
         <View className="mx-5 mb-5">
           <Text className="text-lg font-bold text-slate-800 mb-4">Why We Recommend This Topic</Text>
           
-          {recommendations.map((rec, index) => (
+          {/* {recommendations.map((rec, index) => (
             <View key={index} className="bg-white p-4 rounded-xl mb-3 shadow-sm">
               <View className="flex-row justify-between items-center mb-2">
                 <Text className="text-base font-semibold text-slate-800 flex-1">{rec.title}</Text>
@@ -285,7 +296,73 @@ export default function TopicJustify() {
                 {rec.description}
               </Text>
             </View>
-          ))}
+          ))} */}
+
+{/* Trend Analysis */}
+          {chartApiData?.forecast?.trend && (
+            <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
+              <View className="flex-row items-center mb-2">
+                <View className="w-8 h-8 bg-blue-100 rounded-full items-center justify-center mr-3">
+                  <TrendingUp size={16} color="#3b82f6" />
+                </View>
+                <Text className="text-base font-semibold text-slate-800">Trend Analysis</Text>
+              </View>
+              <Text className="text-sm text-slate-600 leading-5">
+                {chartApiData.forecast.trend}
+              </Text>
+            </View>
+          )}
+
+          {/* Impact Score */}
+  {currentData?.forecast?.impact && (
+    <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
+      <View className="flex-row items-center mb-2">
+        <View className="w-8 h-8 bg-purple-100 rounded-full items-center justify-center mr-3">
+          <Target size={16} color="#7c3aed" />
+        </View>
+        <Text className="text-base font-semibold text-slate-800">Impact Level</Text>
+        <View className="ml-auto bg-purple-100 px-3 py-1 rounded-full">
+          <Text className="text-sm font-semibold text-purple-800">
+            {currentData.forecast.impact}
+          </Text>
+        </View>
+      </View>
+    </View>
+  )}
+
+
+
+          {/* Key Themes */}
+          {chartApiData?.forecast?.relatives && chartApiData.forecast.relatives.length > 0 && (
+            <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
+              <View className="flex-row items-center mb-3">
+                <View className="w-8 h-8 bg-yellow-100 rounded-full items-center justify-center mr-3">
+                  <Lightbulb size={16} color="#eab308" />
+                </View>
+                <Text className="text-base font-semibold text-slate-800">Key Themes</Text>
+              </View>
+              <View className="gap-2">
+                {chartApiData.forecast.prefix && (
+                  <Text className="text-sm font-medium text-slate-700">
+                    {chartApiData.forecast.prefix}
+                  </Text>
+                )}
+                {chartApiData.forecast.relatives.map((relative, index) => (
+                  <View key={index} className="flex-row items-start">
+                    <Text className="text-slate-600 mr-2">•</Text>
+                    <Text className="text-sm text-slate-600 flex-1">
+                      {relative}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          
+  
+
+
         </View>
          {/* Practice section */}
         {/* <View className="mx-5 mb-10">
