@@ -141,7 +141,7 @@ export function useTopics() {
 }
 
 // Helper function to transform API data to Topic structure
-function transformTopicsData(apiData: Record<string, { subtopic: { number: number , hot:number} }>): Topic[] {
+function transformTopicsData(apiData: Record<string, { subtopic: { number: number , weightage:number} }>): Topic[] {
   const topicIcons = ['🌱', '📚', '🌍', '💰', '⚖️', '🏛️', '🎭', '🔬', '🏥', '🚀', '🎨', '📊'];
   const colors = [
     '#F5A3A3', '#A3C3F5', '#7DB8E8', '#E67E22', '#C39BD3', '#85C1E9',
@@ -151,7 +151,7 @@ function transformTopicsData(apiData: Record<string, { subtopic: { number: numbe
   return Object.entries(apiData).map(([topicName, data], index) => {
     const subtopicCount = data.subtopic.number;
     // const priority = Math.floor(Math.random() * 10) + 1; // Random 1-10
-    const rating = data.subtopic.hot; // from API hot
+    const weightage = data.subtopic.weightage; // from API hot
     // const isHot = Math.random() > 0.5; // Random true/false
     
     // // Determine difficulty based on subtopic count
@@ -168,7 +168,7 @@ function transformTopicsData(apiData: Record<string, { subtopic: { number: numbe
       id: topicName, // Use topic name as ID
       name: topicName.charAt(0).toUpperCase() + topicName.slice(1), // Capitalize first letter
       // priority,
-      rating,
+      weightage,
       // isHot,
       color: colors[index % colors.length],
       icon: topicIcons[index % topicIcons.length],

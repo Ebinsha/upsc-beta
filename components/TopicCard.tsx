@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Flame } from 'lucide-react-native';
+import { Flame, Gauge } from 'lucide-react-native';
 import { StarRating } from './StarRating';
 
 interface TopicCardProps {
@@ -63,12 +63,11 @@ export function TopicCard({
         
         {/* Bottom Section */}
         <View className="flex-row justify-between items-end">
-          <View className="flex-shrink">
-            <StarRating rating={rating} size={12} />
-          </View>
           
           <View className="items-end flex-shrink-0 ml-2">
+            <View className="ml-auto bg-gray-100/30 px-3 py-1 rounded-full ">
             {bottomRightText && bottomRightText.map((text, index) => (
+              
               <Text 
                 key={index}
                 className="text-xs text-slate-600 font-medium leading-tight"
@@ -76,7 +75,16 @@ export function TopicCard({
               >
                 {text}
               </Text>
+
+
             ))}
+            </View>
+          </View>
+
+           <View className="flex-row items-center gap-1">
+            {/* <StarRating rating={rating} size={12} /> */}
+            <Gauge size={16} color="#555" />
+            <Text className="text-sm font-semibold text-slate-800 ml-1">{rating}</Text>
           </View>
         </View>
       </View>

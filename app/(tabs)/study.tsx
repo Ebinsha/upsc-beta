@@ -55,11 +55,23 @@ export default function Study() {
 
   
 
-  const getCardSize = (priority: number) => {
-    if (priority >= 4) return { width: width - 40, height: 140 }; // Large
-    if (priority >= 3) return { width: (width - 52) / 2, height: 120 }; // Medium
+  // const getCardSize = (priority: number) => {
+  //   if (priority >= 4) return { width: width - 40, height: 140 }; // Large
+  //   if (priority >= 3) return { width: (width - 52) / 2, height: 120 }; // Medium
+  //   return { width: (width - 52) / 2, height: 100 }; // Small
+  // };
+  const getCardSize = (index:number) => {
+  if (index < 2) {
+    // Top 2 highest percentages
+    return { width: width - 40, height: 140 }; // Large
+  } else if (index < 5) {
+    // Next 3
+    return { width: (width - 52) / 2, height: 120 }; // Medium
+  } else {
+    // Remaining 4
     return { width: (width - 52) / 2, height: 100 }; // Small
-  };
+  }
+};
 
   const handleTopicPress = (topic: Topic) => {
     router.push({
@@ -159,9 +171,9 @@ if (isLoadingOnboard) {
           {topics && topics.length > 0 ? (
             <View className="flex-row flex-wrap gap-3">
               {topics
-                .sort((a, b) => b.rating - a.rating)
-                .map((topic) => {
-                  const cardSize = getCardSize(topic.rating);
+                .sort((a, b) => parseFloat(b.weightage) - parseFloat(a.weightage))
+                .map((topic ,index) => {
+                  const cardSize = getCardSize(index);
                   
                   return (
                     <TopicCard
@@ -169,7 +181,7 @@ if (isLoadingOnboard) {
                       id={topic.id}
                       name={topic.name}
                       priority={topic.priority}
-                      rating={topic.rating}
+                      rating={topic.weightage}
                       // isHot={topic.isHot}
                       icon={topic.icon}
                       color={topic.color}
