@@ -1,12 +1,12 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
+import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-import { useState, useEffect } from 'react';
-import { router } from 'expo-router';
-import { TopicCard } from '@/components/TopicCard';
-import { Topic } from '@/types/api';
-import { useTopics } from '@/hooks/useApiData';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import OnboardingScreen from '@/components/OnboardingScreen';
+import { TopicCard } from '@/components/TopicCard';
+import { useTopics } from '@/hooks/useApiData';
+import { Topic } from '@/types/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -55,23 +55,20 @@ export default function Study() {
 
   
 
-  // const getCardSize = (priority: number) => {
-  //   if (priority >= 4) return { width: width - 40, height: 140 }; // Large
-  //   if (priority >= 3) return { width: (width - 52) / 2, height: 120 }; // Medium
-  //   return { width: (width - 52) / 2, height: 100 }; // Small
-  // };
-  const getCardSize = (index:number) => {
-  if (index < 2) {
-    // Top 2 highest percentages
-    return { width: width - 40, height: 140 }; // Large
-  } else if (index < 5) {
-    // Next 3
-    return { width: (width - 52) / 2, height: 120 }; // Medium
-  } else {
-    // Remaining 4
-    return { width: (width - 52) / 2, height: 100 }; // Small
-  }
-};
+  const getCardSize = (weightage: string) => {
+    const weight = parseFloat(weightage);
+    
+    if (weight >= 8) {
+      // High weightage topics - Large cards (>8%)
+      return { width: width - 40, height: 150, tier: 'high' };
+    } else if (weight >= 5) {
+      // Medium weightage topics - Medium cards (5-8%)
+      return { width: (width - 52) / 2, height: 130, tier: 'medium' };
+    } else {
+      // Low weightage topics - Small cards (<5%)
+      return { width: (width - 64) / 3, height: 120, tier: 'low' };
+    }
+  };
 
   const handleTopicPress = (topic: Topic) => {
     router.push({
@@ -155,8 +152,10 @@ if (isLoadingOnboard) {
         </View>
       ) : (
         <ScrollView 
+        
           showsVerticalScrollIndicator={false} 
           className="flex-1 p-5"
+          contentContainerStyle={{ paddingBottom: 25 }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -169,30 +168,106 @@ if (isLoadingOnboard) {
           <Text className="text-xl font-bold text-slate-800 mb-5">Trend Based Topic Distribution</Text>
           
           {topics && topics.length > 0 ? (
-            <View className="flex-row flex-wrap gap-3">
-              {topics
-                .sort((a, b) => parseFloat(b.weightage) - parseFloat(a.weightage))
-                .map((topic ,index) => {
-                  const cardSize = getCardSize(index);
-                  
-                  return (
-                    <TopicCard
-                      key={topic.id}
-                      id={topic.id}
-                      name={topic.name}
-                      priority={topic.priority}
-                      rating={topic.weightage}
-                      // isHot={topic.isHot}
-                      icon={topic.icon}
-                      color={topic.color}
-                      width={cardSize.width}
-                      height={cardSize.height}
-                      bottomLeftText=""
-                      bottomRightText={[`${topic.subtopicCount} Subtopics`]}
-                      onPress={() => handleTopicPress(topic)}
-                    />
-                  );
-                })}
+            <View className="gap-6">
+              {/* Sort topics by weightage */}
+              {(() => {
+                const sortedTopics = [...topics].sort((a, b) => parseFloat(b.weightage) - parseFloat(a.weightage));
+                const highWeightage = sortedTopics.filter(t => parseFloat(t.weightage) >= 8);
+                const mediumWeightage = sortedTopics.filter(t => parseFloat(t.weightage) >= 5 && parseFloat(t.weightage) < 8);
+                const lowWeightage = sortedTopics.filter(t => parseFloat(t.weightage) < 5);
+
+                return (
+                  <>
+                    {/* High Priority Topics - Large Cards */}
+                    {highWeightage.length > 0 && (
+                      <View>
+                        <Text className="text-base font-semibold text-slate-600 mb-3">High Priority Topics</Text>
+                        <View className="gap-3">
+                          {highWeightage.map((topic) => {
+                            const cardSize = getCardSize(topic.weightage);
+                            return (
+                              <TopicCard
+                                key={topic.id}
+                                id={topic.id}
+                                name={topic.name}
+                                priority={topic.priority}
+                                rating={topic.weightage}
+                                icon={topic.icon}
+                                color={topic.color}
+                                width={cardSize.width}
+                                height={cardSize.height}
+                                bottomLeftText=""
+                                bottomRightText={[`${topic.subtopicCount} Subtopics`]}
+                                onPress={() => handleTopicPress(topic)}
+                              />
+                            );
+                          })}
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Medium Priority Topics - Medium Cards */}
+                    {mediumWeightage.length > 0 && (
+                      <View>
+                        <Text className="text-base font-semibold text-slate-600 mb-3">Medium Priority Topics</Text>
+                        <View className="flex-row flex-wrap gap-3">
+                          {mediumWeightage.map((topic) => {
+                            const cardSize = getCardSize(topic.weightage);
+                            return (
+                              <TopicCard
+                                key={topic.id}
+                                id={topic.id}
+                                name={topic.name}
+                                priority={topic.priority}
+                                rating={topic.weightage}
+                                icon={topic.icon}
+                                color={topic.color}
+                                width={cardSize.width}
+                                height={cardSize.height}
+                                bottomLeftText=""
+                                bottomRightText={[`${topic.subtopicCount} Subtopics`]}
+                                onPress={() => handleTopicPress(topic)}
+                              />
+                            );
+                          })}
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Low Priority Topics - Small Cards in Row */}
+                    {lowWeightage.length > 0 && (
+                      <View>
+                        <Text className="text-base font-semibold text-slate-600 mb-3">Standard Priority Topics</Text>
+                        <ScrollView 
+                          horizontal 
+                          showsHorizontalScrollIndicator={false}
+                          contentContainerStyle={{ gap: 12 , paddingBottom: 5 }}
+                        >
+                          {lowWeightage.map((topic) => {
+                            const cardSize = getCardSize(topic.weightage);
+                            return (
+                              <TopicCard
+                                key={topic.id}
+                                id={topic.id}
+                                name={topic.name}
+                                priority={topic.priority}
+                                rating={topic.weightage}
+                                icon={topic.icon}
+                                color={topic.color}
+                                width={cardSize.width}
+                                height={cardSize.height}
+                                bottomLeftText=""
+                                bottomRightText={[`${topic.subtopicCount} Subtopics`]}
+                                onPress={() => handleTopicPress(topic)}
+                              />
+                            );
+                          })}
+                        </ScrollView>
+                      </View>
+                    )}
+                  </>
+                );
+              })()}
             </View>
           ) : (
             <View className="flex-1 justify-center items-center py-20">

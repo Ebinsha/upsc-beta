@@ -15,7 +15,7 @@ export default function Subtopics() {
   const { topicId, topicName, topicColor } = params;
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-  const [showPracticeModal, setShowPracticeModal] = useState(false);
+
   
   // Use the API hook to fetch subtopics
   const { data: subtopics, loading, error, refetch } = useSubtopics(topicName as string);
