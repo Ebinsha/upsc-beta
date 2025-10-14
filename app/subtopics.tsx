@@ -144,7 +144,7 @@ export default function Subtopics() {
                   color="#FEE2E2"
                   icon={Flame}
                   onSubtopicPress={handleSubtopicPress}
-                  defaultExpanded={true}
+                  defaultExpanded={false}
                 />
               )}
 

@@ -1,25 +1,28 @@
-import { router } from 'expo-router';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Link, router } from 'expo-router';
+import { Eye, EyeOff, Mail, Lock, Brain } from 'lucide-react-native';
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleEmailSignIn = async () => {
     if (!email || !password) {
@@ -27,94 +30,81 @@ export default function SignIn() {
       return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     try {
-      // Add your authentication logic here
-      // Example: await signInWithEmail(email, password);
-      
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Navigate to main app
-      router.replace('/(tabs)/study');
+      // For demo purposes, accept any email/password
+      Alert.alert('Success', 'Signed in successfully!', [
+        { text: 'OK', onPress: () => router.replace('/(tabs)') }
+      ]);
     } catch (error) {
-      Alert.alert('Error', 'Failed to sign in. Please check your credentials.');
+      Alert.alert('Error', 'Failed to sign in. Please try again.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
     try {
-      // Add your Google authentication logic here
-      // Example: await signInWithGoogle();
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Navigate to main app
-      router.replace('/(tabs)/study');
+      // This is a demo implementation
+      Alert.alert('Google Sign In', 'Google authentication would be implemented here', [
+        { text: 'Demo Login', onPress: () => router.replace('/(tabs)') },
+        { text: 'Cancel', style: 'cancel' }
+      ]);
     } catch (error) {
-      Alert.alert('Error', 'Failed to sign in with Google.');
-    } finally {
-      setGoogleLoading(false);
+      Alert.alert('Error', 'Google sign in failed');
     }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <KeyboardAvoidingView
+      <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className="flex-1 px-6 pt-8 pb-6">
-            {/* Header */}
-            <View className="mb-10">
-              <Text className="text-4xl font-bold text-slate-900 mb-2">
-                Welcome Back
-              </Text>
-              <Text className="text-base text-slate-500">
-                Sign in to continue your SmartGuru AI.
-              </Text>
+        <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View className="items-center mt-12 mb-8">
+            <View className="w-20 h-20 bg-blue-500 rounded-full items-center justify-center mb-4 shadow-lg">
+              <Brain size={32} color="white" />
             </View>
+            <Text className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</Text>
+            <Text className="text-gray-600 text-center">
+              Sign in to continue your smart learning journey
+            </Text>
+          </View>
 
+          {/* Sign In Form */}
+          <View className="space-y-4 mb-6">
             {/* Email Input */}
-            <View className="mb-4">
-              <Text className="text-sm font-semibold text-slate-700 mb-2">
-                Email Address
-              </Text>
-              <View className="flex-row items-center bg-slate-50 rounded-2xl px-4 py-4 border border-slate-200">
-                <Mail size={20} color="#64748b" />
+            <View>
+              <Text className="text-gray-700 font-medium mb-2">Email</Text>
+              <View className="flex-row items-center bg-gray-50 rounded-xl px-4 py-4 border border-gray-200">
+                <Mail size={20} color="#9CA3AF" />
                 <TextInput
-                  className="flex-1 ml-3 text-base text-slate-900"
+                  className="flex-1 ml-3 text-gray-700"
                   placeholder="Enter your email"
-                  placeholderTextColor="#94a3b8"
+                  placeholderTextColor="#9CA3AF"
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  autoComplete="email"
+                  autoCorrect={false}
                 />
               </View>
             </View>
 
             {/* Password Input */}
-            <View className="mb-6">
-              <Text className="text-sm font-semibold text-slate-700 mb-2">
-                Password
-              </Text>
-              <View className="flex-row items-center bg-slate-50 rounded-2xl px-4 py-4 border border-slate-200">
-                <Lock size={20} color="#64748b" />
+            <View>
+              <Text className="text-gray-700 font-medium mb-2">Password</Text>
+              <View className="flex-row items-center bg-gray-50 rounded-xl px-4 py-4 border border-gray-200">
+                <Lock size={20} color="#9CA3AF" />
                 <TextInput
-                  className="flex-1 ml-3 text-base text-slate-900"
+                  className="flex-1 ml-3 text-gray-700"
                   placeholder="Enter your password"
-                  placeholderTextColor="#94a3b8"
+                  placeholderTextColor="#9CA3AF"
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
@@ -122,78 +112,61 @@ export default function SignIn() {
                 />
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                   {showPassword ? (
-                    <EyeOff size={20} color="#64748b" />
+                    <EyeOff size={20} color="#9CA3AF" />
                   ) : (
-                    <Eye size={20} color="#64748b" />
+                    <Eye size={20} color="#9CA3AF" />
                   )}
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Forgot Password */}
-            <TouchableOpacity className="self-end mb-6">
-              <Text className="text-sm font-semibold text-blue-600">
-                Forgot Password?
-              </Text>
+            <TouchableOpacity className="self-end">
+              <Text className="text-blue-600 font-medium">Forgot Password?</Text>
             </TouchableOpacity>
+          </View>
 
-            {/* Sign In Button */}
-            <TouchableOpacity
-              className="bg-blue-600 rounded-2xl py-4 mb-4"
-              onPress={handleEmailSignIn}
-              disabled={loading}
-              style={{
-                opacity: loading ? 0.7 : 1,
-              }}
-            >
-              {loading ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                <Text className="text-white text-center text-base font-bold">
-                  Sign In
-                </Text>
-              )}
-            </TouchableOpacity>
+          {/* Sign In Button */}
+          <TouchableOpacity
+            className={`bg-blue-500 py-4 rounded-xl shadow-lg mb-4 ${isLoading ? 'opacity-70' : ''}`}
+            onPress={handleEmailSignIn}
+            disabled={isLoading}
+            activeOpacity={0.8}
+          >
+            <Text className="text-white text-center font-semibold text-lg">
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </Text>
+          </TouchableOpacity>
 
-            {/* Divider */}
-            <View className="flex-row items-center my-6">
-              <View className="flex-1 h-px bg-slate-200" />
-              <Text className="mx-4 text-sm text-slate-500">OR</Text>
-              <View className="flex-1 h-px bg-slate-200" />
-            </View>
+          {/* Divider */}
+          <View className="flex-row items-center my-6">
+            <View className="flex-1 h-px bg-gray-300" />
+            <Text className="mx-4 text-gray-500">or</Text>
+            <View className="flex-1 h-px bg-gray-300" />
+          </View>
 
-            {/* Google Sign In Button */}
-            <TouchableOpacity
-              className="bg-white border-2 border-slate-200 rounded-2xl py-4 mb-6"
-              onPress={handleGoogleSignIn}
-              disabled={googleLoading}
-              style={{
-                opacity: googleLoading ? 0.7 : 1,
-              }}
-            >
-              {googleLoading ? (
-                <ActivityIndicator color="#3b82f6" />
-              ) : (
-                <View className="flex-row items-center justify-center">
-                  <Text className="text-xl mr-2">🔍</Text>
-                  <Text className="text-slate-900 text-base font-bold">
-                    Continue with Google
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
+          {/* Google Sign In */}
+          <TouchableOpacity
+            className="flex-row items-center justify-center bg-white border border-gray-300 py-4 rounded-xl shadow-sm mb-8"
+            onPress={handleGoogleSignIn}
+            activeOpacity={0.8}
+          >
+            <Image 
+              source={require('../../assets/images/google.png')} 
+              style={{ width: 20, height: 20, marginRight: 12 }} 
+              resizeMode="contain"
+            />
+            <Text className="text-gray-700 font-semibold">Continue with Google</Text>
+          </TouchableOpacity>
 
-            {/* Sign Up Link */}
-            <View className="flex-row justify-center items-center mt-auto">
-              <Text className="text-slate-600 text-sm">
-                Don't have an account?{' '}
-              </Text>
-              <TouchableOpacity onPress={() => router.push('/(auth)/sign-up')}>
-                <Text className="text-blue-600 text-sm font-bold">
-                  Sign Up
-                </Text>
+          {/* Sign Up Link */}
+          <View className="flex-row justify-center items-center mb-8">
+            <Text className="text-gray-600">Don't have an account? </Text>
+            <Link href="/(auth)/sign-up" asChild>
+              <TouchableOpacity>
+                <Text className="text-blue-600 font-semibold">Sign Up</Text>
               </TouchableOpacity>
-            </View>
+            </Link>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
