@@ -67,7 +67,7 @@ export default function TopicJustify() {
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: 100 }}>
         <View className="bg-white m-5 p-5 rounded-2xl shadow-sm">
           <View className="flex-row justify-between items-center mb-3">
             <View className="flex-1">
