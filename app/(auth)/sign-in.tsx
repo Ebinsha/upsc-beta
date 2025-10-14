@@ -80,7 +80,7 @@ export default function SignIn() {
                 Welcome Back
               </Text>
               <Text className="text-base text-slate-500">
-                Sign in to continue your UPSC preparation
+                Sign in to continue your SmartGuru AI.
               </Text>
             </View>
 
