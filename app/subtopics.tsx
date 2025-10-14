@@ -1,12 +1,10 @@
-
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Search, Flame, Target, BookOpen, Play } from 'lucide-react-native';
-import { useState } from 'react';
 import { SubtopicGroup } from '@/components/SubtopicGroup';
 import { useSubtopics } from '@/hooks/useApiData';
 import { Subtopic } from '@/types/api';
-import { PracticeModal } from '@/components/PracticeModal';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeft, BookOpen, Flame, Search, Target } from 'lucide-react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -45,14 +43,13 @@ export default function Subtopics() {
     });
   };
 
-  // Group subtopics by hot topics and priority
+  // Group subtopics by priority (trending, hot, medium)
   const groupSubtopics = (subtopicsData: Subtopic[]) => {
-    const hotTopics = subtopicsData.filter(s => s.isHot);
-    const highPriority = subtopicsData.filter(s => !s.isHot && s.priority >= 7);
-    const mediumPriority = subtopicsData.filter(s => !s.isHot && s.priority >= 4 && s.priority < 7);
-    const lowPriority = subtopicsData.filter(s => !s.isHot && s.priority < 4);
+    const hotTopics = subtopicsData.filter(s => s.priority.toLowerCase() === 'trending');
+    const highPriority = subtopicsData.filter(s => s.priority.toLowerCase() === 'hot');
+    const mediumPriority = subtopicsData.filter(s => s.priority.toLowerCase() === 'medium');
 
-    return { hotTopics, highPriority, mediumPriority, lowPriority };
+    return { hotTopics, highPriority, mediumPriority };
   };
 
   // Filter and group subtopics
@@ -60,7 +57,7 @@ export default function Subtopics() {
     subtopic.name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
-  const { hotTopics, highPriority, mediumPriority, lowPriority } = groupSubtopics(filteredSubtopics);
+  const { hotTopics, highPriority, mediumPriority } = groupSubtopics(filteredSubtopics);
 
   return (
     <View className="flex-1 bg-slate-50">
@@ -135,12 +132,12 @@ export default function Subtopics() {
         >
           {subtopics && subtopics.length > 0 ? (
             <>
-              {/* Hot Topics Section */}
+              {/* Hot Topics Section - Trending */}
               {hotTopics.length > 0 && (
                 <SubtopicGroup
                   title="🔥 Trending Topics"
-                  subtitle={`${hotTopics.length} hot topics • High exam frequency`}
-                  subtopics={hotTopics.sort((a, b) => b.priority - a.priority)}
+                  subtitle={`${hotTopics.length} trending topics • High exam frequency`}
+                  subtopics={hotTopics}
                   color="#FEE2E2"
                   icon={Flame}
                   onSubtopicPress={handleSubtopicPress}
@@ -148,16 +145,16 @@ export default function Subtopics() {
                 />
               )}
 
-              {/* High Priority Section */}
+              {/* High Priority Section - Hot */}
               {highPriority.length > 0 && (
                 <SubtopicGroup
-                  title="🎯 High Priority"
-                  subtitle={`${highPriority.length} topics • Priority 7+ • Focus areas`}
-                  subtopics={highPriority.sort((a, b) => b.priority - a.priority)}
+                  title="🎯 Hot Topics"
+                  subtitle={`${highPriority.length} hot topics • Important areas`}
+                  subtopics={highPriority}
                   color="#DBEAFE"
                   icon={Target}
                   onSubtopicPress={handleSubtopicPress}
-                  defaultExpanded={hotTopics.length === 0}
+                  defaultExpanded={false}
                 />
               )}
 
@@ -165,21 +162,9 @@ export default function Subtopics() {
               {mediumPriority.length > 0 && (
                 <SubtopicGroup
                   title="📚 Medium Priority"
-                  subtitle={`${mediumPriority.length} topics • Priority 4-6 • Important concepts`}
-                  subtopics={mediumPriority.sort((a, b) => b.priority - a.priority)}
+                  subtitle={`${mediumPriority.length} topics • Standard coverage`}
+                  subtopics={mediumPriority}
                   color="#FEF3C7"
-                  icon={BookOpen}
-                  onSubtopicPress={handleSubtopicPress}
-                />
-              )}
-
-              {/* Low Priority Section */}
-              {lowPriority.length > 0 && (
-                <SubtopicGroup
-                  title="📋 Other Topics"
-                  subtitle={`${lowPriority.length} topics • Priority <4 • Additional coverage`}
-                  subtopics={lowPriority.sort((a, b) => b.priority - a.priority)}
-                  color="#F3F4F6"
                   icon={BookOpen}
                   onSubtopicPress={handleSubtopicPress}
                 />

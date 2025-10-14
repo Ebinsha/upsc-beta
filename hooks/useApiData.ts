@@ -226,8 +226,6 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
     }
   }
   
-  // console.log('Extracted subtopic data:', JSON.stringify(subtopicData, null, 2));
-  
   if (!subtopicData || !subtopicData.ids) {
     console.log('No subtopic data or ids found');
     return [];
@@ -237,31 +235,23 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
   console.log('Subtopic IDs:', JSON.stringify(subtopicsIds, null, 2));
   
   return Object.entries(subtopicsIds).map(([id, subtopicData], index) => {
-    const data = subtopicData as { name: string, count: number , hot: boolean};
-    const priority = data.count; // Use count as priority
-    const rating = Math.round((Math.random() * 4 + 1) * 10) / 10; // Random 1.0-5.0 with 1 decimal
-    const isHot = data.hot; // from API
-    const questionsCount = Math.floor(Math.random() * 150) + 1; // Random 1-150
+    const data = subtopicData as { name: string, count: number, category: string };
     
-    // // Determine difficulty based on questions count
-    // let difficulty: 'Low' | 'Medium' | 'High';
-    // if (questionsCount < 50) {
-    //   difficulty = 'Low';
-    // } else if (questionsCount <= 100) {
-    //   difficulty = 'Medium';
-    // } else {
-    //   difficulty = 'High';
-    // }
-
+    // Map API priority values to our grouping
+    // API returns: "trending", "hot", or "medium"
+    const priority = data.category || 'trending';
+    const questionsCount = data.count || 0;
+    
+    // Determine isHot based on priority
+    // const isHot = priority.toLowerCase() === 'trending';
+    
     return {
       id,
       name: data.name,
-      priority,
-      rating,
-      isHot,
-      icon: subtopicIcons[index % subtopicIcons.length],
+      priority, // Now a string: "trending", "hot", or "medium"
       questionsCount,
-      // difficulty,
+      // isHot,
+      icon: subtopicIcons[index % subtopicIcons.length],
       topicId: topicName.toLowerCase()
     };
   });
