@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { Home, BookOpen, FileText, User, Settings } from 'lucide-react-native';
+import { Home, BookOpen, FileText, User } from 'lucide-react-native';
 // import '@/app/globals.css'
 
 
