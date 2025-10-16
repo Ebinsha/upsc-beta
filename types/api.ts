@@ -20,7 +20,7 @@ export interface Topic {
 export interface Subtopic {
   id: string;
   name: string;
-  priority: number;
+  priority: string; // e.g., 'trending', 'hot', 'medium'
   rating: number;
   isHot: boolean;
   icon: string;

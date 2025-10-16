@@ -210,7 +210,7 @@ export function useSubtopics(topicName: string) {
 function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
   const subtopicIcons = ['🔬', '📊', '🌐', '⚡', '🎯', '📈', '🔍', '💡', '🛠️', '📋', '🌟', '🚀'];
   
-  console.log('Raw API Data:', JSON.stringify(apiData, null, 2));
+  // console.log('Raw API Data:', JSON.stringify(apiData, null, 2));
   
   // Handle the API response structure: { "subtopic": { "number": 10, "ids": {...} } }
   let subtopicData;
@@ -271,8 +271,10 @@ export function useChartData(subtopicId: string, ) {
   // Transform API data to chart format
   const transformedData = rawData ? transformChartData(rawData, subtopicId) : null;
 
+  console.log('Transformed chart data:', transformedData);
+ 
   return {
-    data: transformedData,
+    data: transformedData,  
     loading,
     error,
     refetch
@@ -281,7 +283,7 @@ export function useChartData(subtopicId: string, ) {
 
 // Helper function to transform API chart data with half yearly data
 function transformChartData(apiData: any, subtopicId: string): ChartData {
-  console.log('Raw chart API data:', JSON.stringify(apiData, null, 2));
+  console.log('Raw chart API data from chart:', JSON.stringify(apiData, null, 2));
   
   if (!apiData.range) {
     console.log('No range data found in API response');
@@ -291,21 +293,25 @@ function transformChartData(apiData: any, subtopicId: string): ChartData {
   // Get the data for the specific subtopic ID
   const subtopicData = apiData.range[subtopicId];
 
+  // Extract forecast and score from the range object
+  const forecast = apiData.range.forecast || {};
+  const score = forecast.score || 0;
+
   if (!subtopicData) {
     console.log(`No data found for subtopic ID: ${subtopicId}`);
     // Try to get the first available subtopic data
-    const firstSubtopicId = Object.keys(apiData.range)[0];
+    const firstSubtopicId = Object.keys(apiData.range).find(key => key !== 'forecast');
     if (firstSubtopicId) {
       console.log(`Using data from first available subtopic: ${firstSubtopicId}`);
-      return processHalfYearlyData(apiData.range[firstSubtopicId], apiData.forecast);
+      return processHalfYearlyData(apiData.range[firstSubtopicId], forecast, score);
     }
     return createEmptyChartData();
   }
 
-  return processHalfYearlyData(subtopicData, apiData.forecast);
+  return processHalfYearlyData(subtopicData, forecast, score);
 }
 
-function processHalfYearlyData(subtopicData: Record<string, number>, forecast: any): ChartData {
+function processHalfYearlyData(subtopicData: Record<string, number>, forecast: any, score: number): ChartData {
   const entries = Object.entries(subtopicData);
   
   // Sort by date
@@ -324,63 +330,7 @@ function processHalfYearlyData(subtopicData: Record<string, number>, forecast: a
   });
 
   const data = entries.map(([, value]) => value);
-  
-  // // Calculate insights
-  // const totalQuestions = data.reduce((sum, val) => sum + val, 0);
-  // const maxValue = Math.max(...data);
-  // const avgValue = totalQuestions / data.length;
-  // const nonZeroHalves = data.filter(val => val > 0).length;
-  // const growthRate = calculateGrowthRate(data);
-
-  // const insights = [];
-
-   // Add dummy impact score based on data patterns
-  const nonZeroCount = data.filter(v => v > 0).length;
-  const totalPeriods = data.length;
-  let impactScore = 'Medium';
-  
-  if (nonZeroCount / totalPeriods > 0.5) {
-    impactScore = 'Very High';
-  } else if (nonZeroCount / totalPeriods > 0.3) {
-    impactScore = 'High';
-  }
-
-  
-  // if (totalQuestions > 0) {
-  //   insights.push({
-  //     title: 'Total Questions',
-  //     description: `${totalQuestions} questions appeared in total`,
-  //     percentage: totalQuestions
-  //   });
-  // }
-
-  // if (maxValue > 0) {
-  //   const maxIndex = data.indexOf(maxValue);
-  //   insights.push({
-  //     title: 'Peak Activity',
-  //     description: `Highest activity in ${labels[maxIndex]} with ${maxValue} questions`,
-  //     percentage: Math.round((maxValue / totalQuestions) * 100)
-  //   });
-  // }
-
-  // if (recommendation?.trend) {
-  //   insights.push({
-  //     title: 'Trend Analysis',
-  //     description: recommendation.trend,
-  //     percentage: Math.round((nonZeroHalves / entries.length) * 100)
-  //   });
-  // }
-
-  // if (recommendation?.impact) {
-  //   insights.push({
-  //     title: 'Impact Assessment',
-  //     description: `Impact Level: ${recommendation.impact}`,
-  //     percentage: recommendation.impact === 'Very High' ? 90 : 
-  //                recommendation.impact === 'High' ? 75 :
-  //                recommendation.impact === 'Medium' ? 50 : 25
-  //   });
-  // }
-
+ 
   return {
     labels,
     datasets: [{
@@ -391,27 +341,112 @@ function processHalfYearlyData(subtopicData: Record<string, number>, forecast: a
     timeRange: entries.length > 0 ? 
       `${entries[0][0]} to ${entries[entries.length - 1][0]}` : 
       'No data available',
-   forecast: {
-       prefix: forecast?.prefix,
-      relatives: forecast?.relatives,
-      trend: forecast?.trend,
-      impact: impactScore // Add the impact score
+    forecast: {
+      ...forecast,
+      impact: score
     }
   };
 }
 
+
+
+
+
+// function transformChartData(apiData: any, subtopicId: string): ChartData {
+//   console.log('Raw chart API data from chart:', JSON.stringify(apiData, null, 2));
+  
+//   if (!apiData.range) {
+//     console.log('No range data found in API response');
+//     return createEmptyChartData();
+//   }
+
+//   // Get the data for the specific subtopic ID
+//   const subtopicData = apiData.range[subtopicId];
+
+//   if (!subtopicData) {
+//     console.log(`No data found for subtopic ID: ${subtopicId}`);
+//     // Try to get the first available subtopic data
+//     const firstSubtopicId = Object.keys(apiData.range)[0];
+//     if (firstSubtopicId) {
+//       console.log(`Using data from first available subtopic: ${firstSubtopicId}`);
+//       return processHalfYearlyData(apiData.range[firstSubtopicId], apiData?.forecast, apiData?.score);
+//     }
+//     return createEmptyChartData();
+//   }
+
+//   return processHalfYearlyData(subtopicData, apiData.forecast , apiData.score);
+// }
+
+// function processHalfYearlyData(subtopicData: Record<string, number>, forecast: any, score:number): ChartData {
+//   const entries = Object.entries(subtopicData);
+  
+//   // Sort by date
+//   entries.sort(([a], [b]) => {
+//     const [yearA, halfA] = a.split('-');
+//     const [yearB, halfB] = b.split('-');
+//     return yearA === yearB ? 
+//       (halfA === 'H1' ? -1 : 1) : 
+//       parseInt(yearA) - parseInt(yearB);
+//   });
+
+//   // Create formatted labels
+//   const labels = entries.map(([period]) => {
+//     const [year, half] = period.split('-');
+//     return `${half === 'H1' ? 'Jan-Jun' : 'Jul-Dec'} ${year.slice(2)}`;
+//   });
+
+//   const data = entries.map(([, value]) => value);
+  
+//   // // Calculate insights
+//   // const totalQuestions = data.reduce((sum, val) => sum + val, 0);
+//   // const maxValue = Math.max(...data);
+//   // const avgValue = totalQuestions / data.length;
+//   // const nonZeroHalves = data.filter(val => val > 0).length;
+//   // const growthRate = calculateGrowthRate(data);
+
+//   // const insights = [];
+
+//    // Add dummy impact score based on data patterns
+//   // const nonZeroCount = data.filter(v => v > 0).length;
+//   // const totalPeriods = data.length;
+//   // let impactScore = 'Medium';
+  
+//   // if (nonZeroCount / totalPeriods > 0.5) {
+//   //   impactScore = 'Very High';
+//   // } else if (nonZeroCount / totalPeriods > 0.3) {
+//   //   impactScore = 'High';
+//   // }
+
+ 
+//   return {
+//     labels,
+//     datasets: [{
+//       data,
+//       strokeWidth: 3,
+//       color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`
+//     }],
+//     timeRange: entries.length > 0 ? 
+//       `${entries[0][0]} to ${entries[entries.length - 1][0]}` : 
+//       'No data available',
+//    forecast: {
+//        ...forecast,
+//       impact: score// Add the impact score
+//     }
+//   };
+// }
+
 // Calculate growth rate between first and last non-zero values
-function calculateGrowthRate(data: number[]): number {
-  const nonZeroValues = data.filter(val => val > 0);
-  if (nonZeroValues.length < 2) return 0;
+// function calculateGrowthRate(data: number[]): number {
+//   const nonZeroValues = data.filter(val => val > 0);
+//   if (nonZeroValues.length < 2) return 0;
   
-  const firstValue = nonZeroValues[0];
-  const lastValue = nonZeroValues[nonZeroValues.length - 1];
+//   const firstValue = nonZeroValues[0];
+//   const lastValue = nonZeroValues[nonZeroValues.length - 1];
   
-  if (firstValue === 0) return 0;
+//   if (firstValue === 0) return 0;
   
-  return Math.round(((lastValue - firstValue) / firstValue) * 100);
-}
+//   return Math.round(((lastValue - firstValue) / firstValue) * 100);
+// }
 
 // Hook for fetching exam questions
 export function useExamQuestions(subtopicId: string) {

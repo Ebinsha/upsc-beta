@@ -35,10 +35,10 @@ export default function Subtopics() {
         topicId: subtopic.id,
         topicName: subtopic.name,
         topicColor: topicColor,
-        rating: subtopic.rating.toString(),
+        // rating: subtopic.rating.toString(),
         questionsCount: subtopic.questionsCount.toString(),
         // difficulty: subtopic.difficulty,
-        isHot: subtopic.isHot.toString()
+        // isHot: subtopic.isHot.toString()
       }
     });
   };
