@@ -55,7 +55,7 @@ export default function Profile() {
   const displayEmail = user?.email || 'No email';
   const userInitials = displayName
     .split(' ')
-    .map(n => n[0])
+    .map((n: string) => n[0])
     .join('')
     .toUpperCase()
     .substring(0, 2);

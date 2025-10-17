@@ -13,10 +13,10 @@ export interface Topic {
 export interface Subtopic {
   id: string;
   name: string;
-  priority: number;
-  rating: number;
-  isHot: boolean;
+  priority: string; // e.g., 'trending', 'hot', 'medium'
+
   icon: string;
   questionsCount: number;
-  difficulty: string;
+  topicId: string;
+
 }

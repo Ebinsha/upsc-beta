@@ -1,4 +1,4 @@
-import { ChartData } from '@/types/api';
+import { ChartData, Topic } from '@/types/api';
 import { Question } from '@/types/test';
 import { Subtopic } from '@/types/topic';
 import { useEffect, useState } from 'react';
@@ -124,7 +124,7 @@ export function useApiData<T = any>({
 
 // Specialized hooks for different data types
 export function useTopics() {
-  const { data: rawData, loading, error, refetch } = useApiData<Record<string, { subtopic: { number: number } }>>({
+  const { data: rawData, loading, error, refetch } = useApiData<Record<string, { subtopic: { number: number , weightage:number } }>>({
     endpoint: '/high_level_topic',
     method: 'GET'
   });
@@ -152,17 +152,7 @@ function transformTopicsData(apiData: Record<string, { subtopic: { number: numbe
     const subtopicCount = data.subtopic.number;
     // const priority = Math.floor(Math.random() * 10) + 1; // Random 1-10
     const weightage = data.subtopic.weightage; // from API hot
-    // const isHot = Math.random() > 0.5; // Random true/false
     
-    // // Determine difficulty based on subtopic count
-    // let difficulty: 'Low' | 'Medium' | 'High';
-    // if (subtopicCount < 100) {
-    //   difficulty = 'Low';
-    // } else if (subtopicCount <= 130) {
-    //   difficulty = 'Medium';
-    // } else {
-    //   difficulty = 'High';
-    // }
 
     return {
       id: topicName, // Use topic name as ID
@@ -234,7 +224,7 @@ function transformSubtopicsData(apiData: any, topicName: string): Subtopic[] {
   const subtopicsIds = subtopicData.ids;
   console.log('Subtopic IDs:', JSON.stringify(subtopicsIds, null, 2));
   
-  return Object.entries(subtopicsIds).map(([id, subtopicData], index) => {
+  return Object.entries(subtopicsIds).map(([id, subtopicData], index): Subtopic => {
     const data = subtopicData as { name: string, count: number, category: string };
     
     // Map API priority values to our grouping
