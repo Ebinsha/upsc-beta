@@ -218,7 +218,6 @@ export default function TopicJustify() {
                   return value === '0' ? '' : value;
                 }
               }}
-              className="rounded-xl"
               bezier
               withDots={true}
               withShadow={false}
