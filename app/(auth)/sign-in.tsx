@@ -1,60 +1,59 @@
-import React, { useState } from 'react';
+import { Link } from 'expo-router';
+import { Brain, Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, router } from 'expo-router';
-import { Eye, EyeOff, Mail, Lock, Brain } from 'lucide-react-native';
-import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
-
-WebBrowser.maybeCompleteAuthSession();
+import { useAuth } from '../../contexts/AuthContext';
+import { useAuthOperations } from '../../hooks/useAuthOperations';
+import { supabase } from '../../lib/supabase';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  
+  const { session, user } = useAuth();
+  const { handleSignIn, isLoading } = useAuthOperations();
+
+  // Log session whenever it changes
+  useEffect(() => {
+    console.log('=== Sign In Page Session Update ===');
+    console.log('Session:', session);
+    console.log('User:', user);
+    console.log('=================================');
+  }, [session, user]);
 
   const handleEmailSignIn = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, accept any email/password
-      Alert.alert('Success', 'Signed in successfully!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
-      ]);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to sign in. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    await handleSignIn(email, password);
   };
 
   const handleGoogleSignIn = async () => {
     try {
-      // This is a demo implementation
-      Alert.alert('Google Sign In', 'Google authentication would be implemented here', [
-        { text: 'Demo Login', onPress: () => router.replace('/(tabs)') },
-        { text: 'Cancel', style: 'cancel' }
-      ]);
-    } catch (error) {
-      Alert.alert('Error', 'Google sign in failed');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'your-app-scheme://auth/callback',
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Google OAuth data:', data);
+    } catch (error: any) {
+      console.error('Google sign in error:', error);
+      Alert.alert('Error', error.message || 'Google sign in failed');
     }
   };
 

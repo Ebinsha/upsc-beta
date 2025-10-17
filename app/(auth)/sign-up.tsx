@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import { Link } from 'expo-router';
+import { Brain, Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, router } from 'expo-router';
-import { Eye, EyeOff, Mail, Lock, User, Brain } from 'lucide-react-native';
+import { useAuth } from '../../contexts/AuthContext';
+import { useAuthOperations } from '../../hooks/useAuthOperations';
+import { supabase } from '../../lib/supabase';
 
 export default function SignUp() {
   const [fullName, setFullName] = useState('');
@@ -21,7 +24,17 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  
+  const { session, user } = useAuth();
+  const { handleSignUp, isLoading } = useAuthOperations();
+
+  // Log session whenever it changes
+  useEffect(() => {
+    console.log('=== Sign Up Page Session Update ===');
+    console.log('Session:', session);
+    console.log('User:', user);
+    console.log('==================================');
+  }, [session, user]);
 
   const handleEmailSignUp = async () => {
     if (!fullName || !email || !password || !confirmPassword) {
@@ -39,29 +52,27 @@ export default function SignUp() {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
-      ]);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to create account. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    // Pass fullName to the hook
+    await handleSignUp(email, password, confirmPassword, fullName);
   };
 
   const handleGoogleSignUp = async () => {
     try {
-      Alert.alert('Google Sign Up', 'Google authentication would be implemented here', [
-        { text: 'Demo Signup', onPress: () => router.replace('/(tabs)') },
-        { text: 'Cancel', style: 'cancel' }
-      ]);
-    } catch (error) {
-      Alert.alert('Error', 'Google sign up failed');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'your-app-scheme://auth/callback',
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Google OAuth data:', data);
+    } catch (error: any) {
+      console.error('Google sign up error:', error);
+      Alert.alert('Error', error.message || 'Google sign up failed');
     }
   };
 
