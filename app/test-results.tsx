@@ -1,15 +1,19 @@
 import { MCQCard } from '@/components/MCQCard';
+import { useAuth } from '@/contexts/AuthContext';
 import { useExamQuestions } from '@/hooks/useApiData';
+import { useTestRecords } from '@/hooks/useUserProgress';
 import { TestAnswer } from '@/types/test';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, CircleCheck as CheckCircle, Clock, ExternalLink, Trophy, Circle as XCircle } from 'lucide-react-native';
-import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-
-const { width } = Dimensions.get('window');
+import { useEffect, useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function TestResults() {
   const params = useLocalSearchParams();
-  const { score, totalQuestions, timeTaken, testTitle, answersData , subtopicId} = params;
+  const { score, totalQuestions, timeTaken, testTitle, answersData , subtopicId, topicId} = params;
+  const { user } = useAuth();
+  const { saveTest } = useTestRecords();
+  const [testSaved, setTestSaved] = useState(false);
   
   // Fetch the same questions that were used in the test
   const { data: questions } = useExamQuestions(subtopicId as string);
@@ -17,6 +21,33 @@ export default function TestResults() {
   console.log({questions});
 
   const answers: TestAnswer[] = answersData ? JSON.parse(answersData as string) : [];
+  
+  // Save test results to database
+  useEffect(() => {
+    if (user?.id && !testSaved && subtopicId && answers.length > 0) {
+      const saveResults = async () => {
+        try {
+          await saveTest({
+            test_title: (testTitle as string) || 'Practice Test',
+            topic_id: (topicId as string) || null,
+            subtopic_id: subtopicId as string,
+            total_questions: parseInt(totalQuestions as string),
+            correct_answers: parseInt(score as string),
+            time_taken_seconds: parseInt(timeTaken as string),
+            test_type: 'practice',
+            answers_data: answers,
+          });
+          setTestSaved(true);
+          console.log('Test results saved successfully');
+        } catch (error) {
+          console.error('Failed to save test results:', error);
+        }
+      };
+      
+      saveResults();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, testSaved, subtopicId, answers.length]);
   const scoreNum = parseInt(score as string);
   const totalNum = parseInt(totalQuestions as string);
   const timeNum = parseInt(timeTaken as string);
