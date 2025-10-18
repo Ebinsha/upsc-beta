@@ -19,6 +19,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useAuthOperations } from '../../hooks/useAuthOperations';
 import { supabase } from '../../lib/supabase';
 
+// Warm up the browser for faster OAuth
+WebBrowser.maybeCompleteAuthSession();
+
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,6 +44,9 @@ export default function SignIn() {
 
   const handleGoogleSignIn = async () => {
     try {
+      // Dismiss any previous browser session to avoid state conflicts
+      WebBrowser.dismissBrowser();
+      
       // Create the redirect URI for your app
       const redirectTo = AuthSession.makeRedirectUri({
         scheme: 'upscbeta', // Your app scheme from app.json
@@ -53,7 +59,7 @@ export default function SignIn() {
         provider: 'google',
         options: {
           redirectTo,
-          skipBrowserRedirect: false,
+          skipBrowserRedirect: true, // We'll handle the redirect ourselves
         },
       });
 
@@ -63,7 +69,16 @@ export default function SignIn() {
 
       // Open the OAuth URL in browser
       if (data?.url) {
-        await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        const result = await WebBrowser.openAuthSessionAsync(
+          data.url, 
+          redirectTo
+        );
+        
+        console.log('Browser result:', result);
+        
+        if (result.type === 'success') {
+          console.log('OAuth success, should redirect to callback');
+        }
       }
 
       console.log('Google OAuth initiated');

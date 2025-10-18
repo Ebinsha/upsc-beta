@@ -125,24 +125,29 @@ npx expo run:ios
 
 ### Common Issues:
 
-**1. "OAuth not working in Expo Go"**
+**1. "The WebBrowser's auth session is in an invalid state"**
+- This happens when a previous OAuth session wasn't cleaned up
+- Solution: We've added `WebBrowser.maybeCompleteAuthSession()` and `WebBrowser.dismissBrowser()` to handle this
+- If you still see this, restart the app completely
+
+**2. "OAuth not working in Expo Go"**
 - Solution: Create a development build. OAuth cannot work in Expo Go.
 
-**2. "Invalid redirect URI"**
+**3. "Invalid redirect URI"**
 - Check that `upscbeta://auth/callback` is added in both:
   - Google Cloud Console (if using native clients)
   - Supabase redirect URL settings
 - Ensure the scheme `upscbeta` matches your app.json
 
-**3. "The browser session was canceled"**
+**4. "The browser session was canceled"**
 - This is normal if you cancel the OAuth flow
 - Try again and complete the sign-in
 
-**4. "Client ID mismatch"**
+**5. "Client ID mismatch"**
 - Make sure you're using the Web Application Client ID in Supabase
 - Not the Android or iOS Client ID
 
-**5. "redirect_uri_mismatch error"**
+**6. "redirect_uri_mismatch error"**
 - Add all these URLs to Google Cloud Console → Authorized redirect URIs:
   ```
   https://YOUR_PROJECT_ID.supabase.co/auth/v1/callback
