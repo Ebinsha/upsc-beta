@@ -1,18 +1,20 @@
 import { MCQCard } from '@/components/MCQCard';
 import { TestTimer } from '@/components/TestTimer';
-import { TestAnswer } from '@/types/test';
 import { useExamQuestions } from '@/hooks/useApiData';
+import { TestAnswer } from '@/types/test';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function PracticeTest() {
   const params = useLocalSearchParams();
   const { testTitle, duration, difficulty, questionsCount , subtopicId  } = params;
   
-  // Fetch questions from API
-  const { data: questions, loading: questionsLoading, error: questionsError } = useExamQuestions(subtopicId as string
+  // Fetch questions from API with difficulty parameter
+  const { data: questions, loading: questionsLoading, error: questionsError } = useExamQuestions(
+    subtopicId as string,
+    difficulty as 'medium' | 'hard' | 'pyq' | undefined
   );
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -189,12 +191,26 @@ export default function PracticeTest() {
           </TouchableOpacity>
         </View>
         
-        <View className="flex-row justify-between items-center">
-          <Text className="text-xl font-bold text-slate-800">{testTitle}</Text>
-          <Text className="text-sm text-slate-500">
-            {answeredCount}/{questions.length} answered
-          </Text>
+        <View className="flex-row justify-between items-center mb-2">
+          <Text className="text-xl font-bold text-slate-800 flex-1">{testTitle}</Text>
+          {difficulty && (
+            <View className={`px-3 py-1 rounded-lg ${
+              difficulty === 'hard' ? 'bg-red-100' : 
+              difficulty === 'pyq' ? 'bg-purple-100' : 'bg-amber-100'
+            }`}>
+              <Text className={`text-xs font-bold uppercase ${
+                difficulty === 'hard' ? 'text-red-700' : 
+                difficulty === 'pyq' ? 'text-purple-700' : 'text-amber-700'
+              }`}>
+                {difficulty === 'pyq' ? 'PYQ' : difficulty}
+              </Text>
+            </View>
+          )}
         </View>
+        
+        <Text className="text-sm text-slate-500">
+          {answeredCount}/{questions.length} answered
+        </Text>
       </View>
 
       {/* Progress Bar */}

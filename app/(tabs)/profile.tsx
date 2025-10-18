@@ -2,11 +2,13 @@ import { Bell, ChevronRight, HelpCircle, LogOut, Settings, User } from 'lucide-r
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAuthOperations } from '../../hooks/useAuthOperations';
+import { useUserDashboard } from '../../hooks/useUserProgress';
 
 
 export default function Profile() {
   const { user, session, loading } = useAuth();
   const { handleSignOut } = useAuthOperations();
+  const { stats, loading: statsLoading } = useUserDashboard();
 
   const menuItems = [
     { 
@@ -44,10 +46,10 @@ export default function Profile() {
     },
   ];
 
-  const stats = [
-    { label: 'Study Streak', value: '12 days' },
-    { label: 'Total Score', value: '2,450' },
-    { label: 'Rank', value: '#147' },
+  const profileStats = [
+    { label: 'Study Streak', value: `${stats?.current_streak || 0} days` },
+    { label: 'Tests Taken', value: `${stats?.total_tests_taken || 0}` },
+    { label: 'Avg Score', value: `${Math.round(stats?.overall_practice_score || 0)}%` },
   ];
 
   // Get user display name and email from session
@@ -60,7 +62,7 @@ export default function Profile() {
     .toUpperCase()
     .substring(0, 2);
 
-  if (loading) {
+  if (loading || statsLoading) {
     return (
       <View className="flex-1 bg-slate-50 items-center justify-center">
         <ActivityIndicator size="large" color="#3B82F6" />
@@ -89,7 +91,7 @@ export default function Profile() {
           <Text className="text-base text-slate-500 mb-6">{displayEmail}</Text>
           
           <View className="flex-row w-full justify-around">
-            {stats.map((stat, index) => (
+            {profileStats.map((stat, index) => (
               <View key={index} className="items-center">
                 <Text className="text-xl font-bold text-slate-800 mb-1">{stat.value}</Text>
                 <Text className="text-sm text-slate-500">{stat.label}</Text>

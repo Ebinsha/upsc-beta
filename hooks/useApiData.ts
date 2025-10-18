@@ -320,6 +320,28 @@ function processHalfYearlyData(subtopicData: Record<string, number>, forecast: a
   });
 
   const data = entries.map(([, value]) => value);
+
+  // Handle both old and new API structure for forecast
+  let processedForecast = { ...forecast };
+  
+  // If forecast.trend is an object with nested trend property, extract it
+  if (forecast?.trend && typeof forecast.trend === 'object' && forecast.trend.trend) {
+    console.log('Processing nested forecast structure...');
+    processedForecast = {
+      prefix: forecast.prefix,
+      relatives: forecast.relatives,
+      trend: forecast.trend.trend, // Extract the nested trend string
+      impact: forecast.trend.impact || score, // Use nested impact or fallback to score
+      score: score
+    };
+  } else if (forecast?.trend && typeof forecast.trend === 'string') {
+    // Old structure - trend is already a string
+    console.log('Using old forecast structure...');
+    processedForecast = {
+      ...forecast,
+      impact: score
+    };
+  }
  
   return {
     labels,
@@ -331,10 +353,7 @@ function processHalfYearlyData(subtopicData: Record<string, number>, forecast: a
     timeRange: entries.length > 0 ? 
       `${entries[0][0]} to ${entries[entries.length - 1][0]}` : 
       'No data available',
-    forecast: {
-      ...forecast,
-      impact: score
-    }
+    forecast: processedForecast
   };
 }
 
@@ -439,15 +458,16 @@ function processHalfYearlyData(subtopicData: Record<string, number>, forecast: a
 // }
 
 // Hook for fetching exam questions
-export function useExamQuestions(subtopicId: string) {
+export function useExamQuestions(subtopicId: string, difficulty?: 'medium' | 'hard' | 'pyq') {
   const { data: rawData, loading, error, refetch } = useApiData<any>({
     endpoint: '/exam',
     method: 'POST',
     body: {
-      topic_id: subtopicId
+      topic_id: subtopicId,
+      ...(difficulty && { difficulty }) // Add difficulty to request if provided
     },
    
-    dependencies: [subtopicId]
+    dependencies: [subtopicId, difficulty]
   });
 
   

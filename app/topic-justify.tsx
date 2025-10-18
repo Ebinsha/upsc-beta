@@ -282,7 +282,7 @@ export default function TopicJustify() {
             </View>
           ))} */}
 
-{/* Trend Analysis */}
+          {/* Trend Analysis */}
           {chartApiData?.forecast?.trend && (
             <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
               <View className="flex-row items-center mb-2">
@@ -305,11 +305,47 @@ export default function TopicJustify() {
           <Target size={16} color="#7c3aed" />
         </View>
         <Text className="text-base font-semibold text-slate-800">Impact Level</Text>
-        <View className="ml-auto bg-purple-100 px-3 py-1 rounded-full">
-          <Text className="text-sm font-semibold text-purple-800">
-            {currentData.forecast.impact}
+        <View className={`ml-auto px-3 py-1 rounded-full ${
+          parseFloat(currentData.forecast.impact) >= 8.8 ? 'bg-red-100' :
+          parseFloat(currentData.forecast.impact) >= 7.5 ? 'bg-orange-100' :
+          'bg-yellow-100'
+        }`}>
+          <Text className={`text-sm font-semibold ${
+            parseFloat(currentData.forecast.impact) >= 8.8 ? 'text-red-800' :
+            parseFloat(currentData.forecast.impact) >= 7.5 ? 'text-orange-800' :
+            'text-yellow-800'
+          }`}>
+            {currentData.forecast.impact}/10
           </Text>
         </View>
+      </View>
+      
+      {/* Priority Level Explanation */}
+      <View className={`mt-3 p-3 rounded-lg ${
+        parseFloat(currentData.forecast.impact) >= 8.8 ? 'bg-red-50' :
+        parseFloat(currentData.forecast.impact) >= 7.5 ? 'bg-orange-50' :
+        'bg-yellow-50'
+      }`}>
+        <Text className={`text-xs font-bold mb-1 uppercase ${
+          parseFloat(currentData.forecast.impact) >= 8.8 ? 'text-red-800' :
+          parseFloat(currentData.forecast.impact) >= 7.5 ? 'text-orange-800' :
+          'text-yellow-800'
+        }`}>
+          {parseFloat(currentData.forecast.impact) >= 8.8 ? '🔥 Trending - Highest Priority' :
+           parseFloat(currentData.forecast.impact) >= 7.5 ? '⚡ Hot - Higher Priority' :
+           '📌 Standard Priority'}
+        </Text>
+        <Text className={`text-xs leading-4 ${
+          parseFloat(currentData.forecast.impact) >= 8.8 ? 'text-red-700' :
+          parseFloat(currentData.forecast.impact) >= 7.5 ? 'text-orange-700' :
+          'text-yellow-700'
+        }`}>
+          {parseFloat(currentData.forecast.impact) >= 8.8 
+            ? 'Extremely important topic with very high exam relevance. Focus on this immediately!'
+            : parseFloat(currentData.forecast.impact) >= 7.5
+            ? 'High importance topic. Should be prioritized in your study plan.'
+            : 'Moderate importance. Cover this topic as part of regular preparation.'}
+        </Text>
       </View>
     </View>
   )}
