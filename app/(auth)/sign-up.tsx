@@ -1,16 +1,18 @@
+import * as AuthSession from 'expo-auth-session';
 import { Link } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { Brain, Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
@@ -58,10 +60,19 @@ export default function SignUp() {
 
   const handleGoogleSignUp = async () => {
     try {
+      // Create the redirect URI for your app
+      const redirectTo = AuthSession.makeRedirectUri({
+        scheme: 'upscbeta', // Your app scheme from app.json
+        path: 'auth/callback'
+      });
+
+      console.log('Redirect URI:', redirectTo);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'your-app-scheme://auth/callback',
+          redirectTo,
+          skipBrowserRedirect: false,
         },
       });
 
@@ -69,10 +80,15 @@ export default function SignUp() {
         throw error;
       }
 
-      console.log('Google OAuth data:', data);
+      // Open the OAuth URL in browser
+      if (data?.url) {
+        await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      }
+
+      console.log('Google OAuth initiated');
     } catch (error: any) {
       console.error('Google sign up error:', error);
-      Alert.alert('Error', error.message || 'Google sign up failed');
+      Alert.alert('Error', error.message || 'Google sign up failed. Note: OAuth does not work in Expo Go. Please use a development build.');
     }
   };
 

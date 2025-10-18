@@ -108,7 +108,7 @@ export default function Subtopics() {
           <Text className="text-6xl mb-4">😕</Text>
           <Text className="text-xl font-bold text-slate-800 mb-2 text-center">Oops! Something went wrong</Text>
           <Text className="text-base text-slate-500 mb-6 text-center">
-            We couldn't load the subtopics. Please check your connection and try again.
+            We couldn&apos;t load the subtopics. Please check your connection and try again.
           </Text>
           <TouchableOpacity 
             className="bg-blue-500 px-6 py-3 rounded-xl"
