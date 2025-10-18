@@ -7,9 +7,14 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+interface QuestionFeedback {
+  questionId: string;
+  feedback: 'positive' | 'negative' | null;
+}
+
 export default function PracticeTest() {
   const params = useLocalSearchParams();
-  const { testTitle, duration, difficulty, questionsCount , subtopicId  } = params;
+  const { testTitle, duration, difficulty, subtopicId  } = params;
   
   // Fetch questions from API with difficulty parameter
   const { data: questions, loading: questionsLoading, error: questionsError } = useExamQuestions(
@@ -19,11 +24,11 @@ export default function PracticeTest() {
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<TestAnswer[]>([]);
+  const [feedback, setFeedback] = useState<QuestionFeedback[]>([]);
   const [startTime] = useState(new Date());
-  const [questionStartTime, setQuestionStartTime] = useState(new Date());
   const [isTestActive, setIsTestActive] = useState(true);
 
-  // Initialize answers array
+  // Initialize answers and feedback arrays
   useEffect(() => {
     if (!questions) return;
     
@@ -34,14 +39,17 @@ export default function PracticeTest() {
       timeTaken: 0
     }));
     setAnswers(initialAnswers);
+    
+    const initialFeedback: QuestionFeedback[] = questions.map(q => ({
+      questionId: q.id,
+      feedback: null
+    }));
+    setFeedback(initialFeedback);
   }, [questions]);
 
   const handleAnswerSelect = (answerIndex: number) => {
-    const timeTaken = Math.floor((new Date().getTime() - questionStartTime.getTime()) / 1000);
     const question = questions?.[currentQuestion];
     if (!question) return;
-    
-    const isCorrect = answerIndex === question.correctAnswer;
     
     console.log('handleAnswerSelect:', {
     answerIndex,
@@ -49,8 +57,6 @@ export default function PracticeTest() {
     questionId: question.id,
     previousAnswers: answers
   });
-
- 
     
     setAnswers(prev => {
       return prev.map(answer => 
@@ -58,20 +64,27 @@ export default function PracticeTest() {
         ? { ...answer, selectedAnswer: Number(answerIndex) }  // Ensure number type
         : answer
     );
-      // const newAnswers = prev.map(answer => 
-      //   answer.questionId === question.id
-      //     ? { ...answer, selectedAnswer: answerIndex, isCorrect, timeTaken }
-      //     : answer
-      // );
-      // console.log('Updated answers:', newAnswers);
-      // return newAnswers;
     });
+  };
+
+  const handleFeedback = (type: 'positive' | 'negative') => {
+    const question = questions?.[currentQuestion];
+    if (!question) return;
+    
+    console.log('Feedback received:', { type, questionId: question.id });
+    
+    setFeedback(prev => 
+      prev.map(f => 
+        f.questionId === question.id
+          ? { ...f, feedback: type }
+          : f
+      )
+    );
   };
 
   const handleNextQuestion = () => {
     if (questions && currentQuestion < questions.length - 1) {
       setCurrentQuestion(prev => prev + 1);
-      setQuestionStartTime(new Date());
     } else {
       handleSubmitTest();
     }
@@ -80,7 +93,6 @@ export default function PracticeTest() {
   const handlePreviousQuestion = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(prev => prev - 1);
-      setQuestionStartTime(new Date());
     }
   };
 
@@ -109,6 +121,7 @@ export default function PracticeTest() {
                 timeTaken: totalTime.toString(),
                 testTitle: testTitle as string,
                 answersData: JSON.stringify(answers),
+                feedbackData: JSON.stringify(feedback),
                 subtopicId: subtopicId as string
               }
             });
@@ -235,6 +248,8 @@ export default function PracticeTest() {
             onSelectAnswer={handleAnswerSelect}
             questionNumber={currentQuestion + 1}
             totalQuestions={questions.length}
+            onFeedback={handleFeedback}
+            questionId={questions[currentQuestion].id}
           />
         )}
       </ScrollView>
