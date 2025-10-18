@@ -1,6 +1,6 @@
 import { MCQCard } from '@/components/MCQCard';
 import { useAuth } from '@/contexts/AuthContext';
-import { useExamQuestions } from '@/hooks/useApiData';
+import { useExamQuestions, useQuestionFeedback } from '@/hooks/useApiData';
 import { useTestRecords } from '@/hooks/useUserProgress';
 import { TestAnswer } from '@/types/test';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -8,12 +8,19 @@ import { ArrowLeft, CircleCheck as CheckCircle, Clock, ExternalLink, Trophy, Cir
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+interface QuestionFeedback {
+  questionId: string;
+  feedback: 'positive' | 'negative' | null; //positive, negative, or no feedback
+}
+
 export default function TestResults() {
   const params = useLocalSearchParams();
-  const { score, totalQuestions, timeTaken, testTitle, answersData , subtopicId, topicId} = params;
+  const { score, totalQuestions, timeTaken, testTitle, answersData, feedbackData, subtopicId, topicId} = params;
   const { user } = useAuth();
   const { saveTest } = useTestRecords();
+  const { submitFeedback } = useQuestionFeedback();
   const [testSaved, setTestSaved] = useState(false);
+  const [feedbackSent, setFeedbackSent] = useState(false);
   
   // Fetch the same questions that were used in the test
   const { data: questions } = useExamQuestions(subtopicId as string);
@@ -21,6 +28,7 @@ export default function TestResults() {
   console.log({questions});
 
   const answers: TestAnswer[] = answersData ? JSON.parse(answersData as string) : [];
+  const feedbackList: QuestionFeedback[] = feedbackData ? JSON.parse(feedbackData as string) : [];
   
   // Save test results to database
   useEffect(() => {
@@ -48,6 +56,37 @@ export default function TestResults() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, testSaved, subtopicId, answers.length]);
+
+  // Submit feedback to API
+  useEffect(() => {
+    if (!feedbackSent && feedbackList.length > 0 && subtopicId) {
+      const sendFeedback = async () => {
+        try {
+          // Filter out feedback that is not null and submit them
+          const feedbackToSubmit = feedbackList.filter(f => f.feedback !== null);
+          
+          console.log(`Submitting ${feedbackToSubmit.length} feedback items...`);
+          
+          const results = await Promise.allSettled(
+            feedbackToSubmit.map(f => 
+              submitFeedback(f.feedback as string, subtopicId as string, f.questionId)
+            )
+          );
+          
+          const successCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+          const failCount = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success)).length;
+          
+          console.log(`Feedback submitted: ${successCount} successful, ${failCount} failed`);
+          setFeedbackSent(true);
+        } catch (error) {
+          console.error('Failed to submit feedback:', error);
+        }
+      };
+      
+      sendFeedback();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feedbackSent, feedbackList.length, subtopicId]);
   const scoreNum = parseInt(score as string);
   const totalNum = parseInt(totalQuestions as string);
   const timeNum = parseInt(timeTaken as string);

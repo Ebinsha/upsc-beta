@@ -191,7 +191,7 @@ export default function SignIn() {
 
           {/* Sign Up Link */}
           <View className="flex-row justify-center items-center mb-8">
-            <Text className="text-gray-600">Don&aposs;t have an account? </Text>
+            <Text className="text-gray-600">Don&apos;t have an account? </Text>
             <Link href="/(auth)/sign-up" asChild>
               <TouchableOpacity>
                 <Text className="text-blue-600 font-semibold">Sign Up</Text>

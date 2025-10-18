@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 interface QuestionFeedback {
+  topicId: string;
   questionId: string;
   feedback: 'positive' | 'negative' | null;
 }
@@ -41,6 +42,7 @@ export default function PracticeTest() {
     setAnswers(initialAnswers);
     
     const initialFeedback: QuestionFeedback[] = questions.map(q => ({
+      topicId: subtopicId as string,
       questionId: q.id,
       feedback: null
     }));

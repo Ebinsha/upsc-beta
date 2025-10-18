@@ -1,6 +1,6 @@
-import { Bell, ChevronRight, HelpCircle, LogOut, Settings, User } from 'lucide-react-native';
-import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Bell, ChevronRight, HelpCircle, LogOut, Settings } from 'lucide-react-native';
 import { useState } from 'react';
+import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAuthOperations } from '../../hooks/useAuthOperations';
 import { useUserDashboard } from '../../hooks/useUserProgress';
@@ -134,30 +134,21 @@ export default function Profile() {
                     </Text>
                     <Text className="text-sm text-slate-500">
                       {item.subtitle}
-                    </Text>ame="text-sm text-slate-500">{item.subtitle}</Text>
+                    </Text>
                   </View>
-                  <ChevronRight size={20} color="#a1a1aa" />
-                </View>e={20} color="#94a3b8" />
-              </TouchableOpacity>chableOpacity>
+                </View>
+                <ChevronRight size={20} color="#94a3b8" />
+              </TouchableOpacity>
             );
           })}
         </View>
 
-        {__DEV__ && session && (* Debug Info (Remove in production) */}
-          <View className="bg-slate-100 rounded-2xl p-4 mt-6"> session && (
-            <Text className="text-xs font-mono text-slate-600">View className="bg-slate-100 rounded-2xl p-4 mt-6">
-              User ID: {user?.id}        <Text className="text-xs font-mono text-slate-600">
-            </Text>             User ID: {user?.id}
-
-
-
-
-
-
-
-
-
-}  );    </View>      </ScrollView>        )}          </View>            </Text>              Created: {new Date(user?.created_at || '').toLocaleDateString()}            <Text className="text-xs font-mono text-slate-600 mt-1">            </Text>
+        {/* Debug Info (Remove in production) */}
+        {__DEV__ && session && (
+          <View className="bg-slate-100 rounded-2xl p-4 mt-6">
+            <Text className="text-xs font-mono text-slate-600">
+              User ID: {user?.id}
+            </Text>
             <Text className="text-xs font-mono text-slate-600 mt-1">
               Created: {new Date(user?.created_at || '').toLocaleDateString()}
             </Text>

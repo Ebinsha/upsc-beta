@@ -535,3 +535,51 @@ function createEmptyChartData(): ChartData {
     // }]
   };
 }
+
+// Hook for submitting question feedback
+export function useQuestionFeedback() {
+  const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  const apiKey = process.env.EXPO_PUBLIC_API_KEY;
+
+  const submitFeedback = async (
+    feedback: string, // 'positive' | 'negative'
+    topicId: string,
+    questionId: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!baseUrl || !apiKey) {
+      return { success: false, error: 'API configuration missing' };
+    }
+
+    try {
+      const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+      const url = `${cleanBaseUrl}/question_feedback`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-API-KEY': apiKey,
+        },
+        body: JSON.stringify({
+          feedback,
+          topic_id: topicId,
+          question_id: questionId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      console.log('Feedback submitted successfully:', { feedback, topicId, questionId });
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Failed to submit feedback:', err);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  return { submitFeedback };
+}

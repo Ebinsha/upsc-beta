@@ -14,6 +14,8 @@ interface MCQCardProps {
   disabled?: boolean;
   questionNumber: number;
   totalQuestions: number;
+  onFeedback?: (type: 'positive' | 'negative') => void;
+  questionId?: string;
 }
 
 export function MCQCard({
@@ -28,6 +30,8 @@ export function MCQCard({
   disabled = false,
   questionNumber,
   totalQuestions,
+  onFeedback,
+  questionId,
 }: MCQCardProps) {
   const isSelected = (index: number) => {
     return selectedAnswer !== null && selectedAnswer === index;
@@ -84,7 +88,9 @@ export function MCQCard({
 
   const handleFeedback = (type: 'up' | 'down') => {
     console.log(`Feedback ${type} for question ${questionNumber}`);
-    // TODO: Implement API call for feedback
+    if (onFeedback) {
+      onFeedback(type);
+    }
   };
 
 
