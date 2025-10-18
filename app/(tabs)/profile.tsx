@@ -1,5 +1,6 @@
 import { Bell, ChevronRight, HelpCircle, LogOut, Settings, User } from 'lucide-react-native';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAuthOperations } from '../../hooks/useAuthOperations';
 import { useUserDashboard } from '../../hooks/useUserProgress';
@@ -9,6 +10,7 @@ export default function Profile() {
   const { user, session, loading } = useAuth();
   const { handleSignOut } = useAuthOperations();
   const { stats, loading: statsLoading } = useUserDashboard();
+  const [imageLoadError, setImageLoadError] = useState(false);
 
   const menuItems = [
     { 
@@ -55,6 +57,7 @@ export default function Profile() {
   // Get user display name and email from session
   const displayName = user?.user_metadata?.full_name || 'User';
   const displayEmail = user?.email || 'No email';
+  const avatarUrl = user?.user_metadata?.avatar_url;
   const userInitials = displayName
     .split(' ')
     .map((n: string) => n[0])
@@ -79,9 +82,14 @@ export default function Profile() {
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 p-5">
         <View className="bg-white rounded-3xl p-6 items-center mb-6 shadow-md">
           <View className="mb-4">
-            <View className="w-20 h-20 rounded-full bg-blue-500 items-center justify-center">
-              {user?.user_metadata?.avatar_url ? (
-                <User size={40} color="white" />
+            <View className="w-20 h-20 rounded-full bg-blue-500 items-center justify-center overflow-hidden">
+              {avatarUrl && !imageLoadError ? (
+                <Image
+                  source={{ uri: avatarUrl }}
+                  style={{ width: 80, height: 80 }}
+                  resizeMode="cover"
+                  onError={() => setImageLoadError(true)}
+                />
               ) : (
                 <Text className="text-2xl font-bold text-white">{userInitials}</Text>
               )}
@@ -124,21 +132,32 @@ export default function Profile() {
                     }`}>
                       {item.title}
                     </Text>
-                    <Text className="text-sm text-slate-500">{item.subtitle}</Text>
+                    <Text className="text-sm text-slate-500">
+                      {item.subtitle}
+                    </Text>ame="text-sm text-slate-500">{item.subtitle}</Text>
                   </View>
-                </View>
-                <ChevronRight size={20} color="#94a3b8" />
-              </TouchableOpacity>
+                  <ChevronRight size={20} color="#a1a1aa" />
+                </View>e={20} color="#94a3b8" />
+              </TouchableOpacity>chableOpacity>
             );
           })}
         </View>
 
-        {/* Debug Info (Remove in production) */}
-        {__DEV__ && session && (
-          <View className="bg-slate-100 rounded-2xl p-4 mt-6">
-            <Text className="text-xs font-mono text-slate-600">
-              User ID: {user?.id}
-            </Text>
+        {__DEV__ && session && (* Debug Info (Remove in production) */}
+          <View className="bg-slate-100 rounded-2xl p-4 mt-6"> session && (
+            <Text className="text-xs font-mono text-slate-600">View className="bg-slate-100 rounded-2xl p-4 mt-6">
+              User ID: {user?.id}        <Text className="text-xs font-mono text-slate-600">
+            </Text>             User ID: {user?.id}
+
+
+
+
+
+
+
+
+
+}  );    </View>      </ScrollView>        )}          </View>            </Text>              Created: {new Date(user?.created_at || '').toLocaleDateString()}            <Text className="text-xs font-mono text-slate-600 mt-1">            </Text>
             <Text className="text-xs font-mono text-slate-600 mt-1">
               Created: {new Date(user?.created_at || '').toLocaleDateString()}
             </Text>
