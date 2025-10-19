@@ -1,5 +1,5 @@
 import { CircleCheck as CheckCircle, Circle, Clock, ThumbsDown, ThumbsUp } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface MCQCardProps {
@@ -36,6 +36,11 @@ export function MCQCard({
   currentFeedback = null,
 }: MCQCardProps) {
   const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(currentFeedback);
+
+  // Reset feedback state when questionId or currentFeedback changes
+  useEffect(() => {
+    setFeedback(currentFeedback);
+  }, [questionId, currentFeedback]);
 
   const isSelected = (index: number) => {
     return selectedAnswer !== null && selectedAnswer === index;
