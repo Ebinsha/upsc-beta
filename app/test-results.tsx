@@ -1,12 +1,12 @@
 import { MCQCard } from '@/components/MCQCard';
 import { useAuth } from '@/contexts/AuthContext';
-import { useExamQuestions, useQuestionFeedback } from '@/hooks/useApiData';
+import { useAvailableTestQuestions, useExamQuestions, useQuestionFeedback } from '@/hooks/useApiData';
 import { useTestRecords } from '@/hooks/useUserProgress';
-import { TestAnswer } from '@/types/test';
+import { Question, TestAnswer } from '@/types/test';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, CircleCheck as CheckCircle, Clock, ExternalLink, Trophy, Circle as XCircle } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 interface QuestionFeedback {
   questionId: string;
@@ -15,17 +15,39 @@ interface QuestionFeedback {
 
 export default function TestResults() {
   const params = useLocalSearchParams();
-  const { score, totalQuestions, timeTaken, testTitle, answersData, feedbackData, subtopicId, topicId} = params;
+  const { score, totalQuestions, timeTaken, testTitle, answersData, feedbackData, subtopicId, topicId, testId, difficulty } = params;
   const { user } = useAuth();
   const { saveTest } = useTestRecords();
   const { submitFeedback } = useQuestionFeedback();
   const [testSaved, setTestSaved] = useState(false);
   const [feedbackSent, setFeedbackSent] = useState(false);
   
-  // Fetch the same questions that were used in the test
-  const { data: questions } = useExamQuestions(subtopicId as string);
+  // Determine test source
+  const isAvailableTest = !!testId;
   
-  console.log({questions});
+  // Fetch questions based on test source
+  // For available tests (from tests.tsx), use /exam_topic_questions endpoint
+  const { 
+    data: availableTestQuestions, 
+    loading: availableTestLoading 
+  } = useAvailableTestQuestions(
+    subtopicId as string,
+    isAvailableTest ? (difficulty as 'medium' | 'hard' | 'pyq' | undefined) : undefined
+  );
+  
+  // For topic-based tests (from topic-justify), use /exam endpoint
+  const { 
+    data: topicQuestions, 
+    loading: topicQuestionsLoading 
+  } = useExamQuestions(
+    !isAvailableTest ? (subtopicId as string) : ''
+  );
+  
+  // Use the appropriate data based on test source
+  const questions: Question[] = isAvailableTest ? (availableTestQuestions || []) : (topicQuestions || []);
+  const questionsLoading = isAvailableTest ? availableTestLoading : topicQuestionsLoading;
+  
+  console.log({questions, questionsLoading, isAvailableTest});
 
   const answers: TestAnswer[] = answersData ? JSON.parse(answersData as string) : [];
   const feedbackList: QuestionFeedback[] = feedbackData ? JSON.parse(feedbackData as string) : [];
@@ -113,6 +135,16 @@ export default function TestResults() {
     return 'bg-red-100';
   };
 
+  // Show loading state while questions are being fetched
+  if (questionsLoading) {
+    return (
+      <View className="flex-1 bg-slate-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text className="text-base text-slate-600 mt-4">Loading test results...</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-slate-50">
       {/* Header */}
@@ -176,6 +208,7 @@ export default function TestResults() {
           
           {questions?.map((question, index) => {
             const answer = answers.find(a => a.questionId === question.id);
+            const questionFeedback = feedbackList.find(f => f.questionId === question.id);
             
             return (
               <View key={question.id} className="mb-6">
@@ -191,6 +224,7 @@ export default function TestResults() {
                   disabled={true}
                   questionNumber={index + 1}
                   totalQuestions={questions.length}
+                  currentFeedback={questionFeedback?.feedback || null}
                 />
                 
                 {/* Explanation */}

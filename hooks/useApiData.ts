@@ -1,4 +1,4 @@
-import { ChartData, Topic } from '@/types/api';
+import { AvailableExam, ChartData, Topic } from '@/types/api';
 import { Question } from '@/types/test';
 import { Subtopic } from '@/types/topic';
 import { useEffect, useState } from 'react';
@@ -457,22 +457,23 @@ function processHalfYearlyData(subtopicData: Record<string, number>, forecast: a
 //   return Math.round(((lastValue - firstValue) / firstValue) * 100);
 // }
 
-// Hook for fetching exam questions
-export function useExamQuestions(subtopicId: string, difficulty?: 'medium' | 'hard' | 'pyq') {
+// Hook for fetching exam questions (for topic-justify page - no difficulty filter)
+export function useExamQuestions(subtopicId: string) {
   const { data: rawData, loading, error, refetch } = useApiData<any>({
     endpoint: '/exam',
     method: 'POST',
     body: {
-      topic_id: subtopicId,
-      ...(difficulty && { difficulty }) // Add difficulty to request if provided
+      topic_id: subtopicId
     },
-   
-    dependencies: [subtopicId, difficulty]
+    enabled: !!subtopicId, // Only fetch when subtopicId is provided
+    dependencies: [subtopicId]
   });
 
   
   // Transform API data to match Question structure
   const transformedData = rawData ? transformExamData(rawData) : null;
+
+  console.log('useExamQuestions:', { subtopicId, enabled: !!subtopicId, loading, error: error });
 
   return {
     data: transformedData,
@@ -582,4 +583,104 @@ export function useQuestionFeedback() {
   };
 
   return { submitFeedback };
+}
+
+// Hook for fetching available test questions (for tests.tsx page)
+export function useAvailableTestQuestions(topic: string, difficulty?: 'medium' | 'hard' | 'pyq') {
+  const { data: rawData, loading, error, refetch } = useApiData<any>({
+    endpoint: '/exam_topic_questions',
+    method: 'POST',
+    body: {
+      topic: topic,
+      ...(difficulty && { difficulty })
+    },
+    enabled: !!topic && !!difficulty, // Only fetch when both topic and difficulty are provided
+    dependencies: [topic, difficulty]
+  });
+
+  // Transform API data to match Question structure
+  const transformedData = rawData ? transformAvailableTestData(rawData) : null;
+
+  console.log('useAvailableTestQuestions:', { topic, difficulty, enabled: !!topic && !!difficulty, loading, error: error });
+
+  return {
+    data: transformedData,
+    loading,
+    error,
+    refetch
+  };
+}
+
+// Helper function to transform available test questions data
+function transformAvailableTestData(apiData: any): Question[] {
+  console.log('Raw available test API data:', JSON.stringify(apiData, null, 2));
+  
+  if (!apiData.questions || !Array.isArray(apiData.questions)) {
+    console.log('No questions found in available test API response');
+    return [];
+  }
+
+  return apiData.questions.map((q: any) => ({
+    id: q.id.toString(),
+    question: q.Question,
+    additionalQuestion: q.Additional_Question || '',
+    statement: q.Statement || [],
+    options: q.Options || [],
+    correctAnswer: q.Answer,
+    explanation: q.Explanation || '',
+    references: [],
+    difficulty: 'Medium' as const,
+    topic: apiData.topic || 'General Studies',
+    subtopic: apiData.topic || 'General',
+  }));
+}
+
+// Hook for fetching available exam topics
+export function useAvailableExamTopics() {
+  const { data: rawData, loading, error, refetch } = useApiData<any>({
+    endpoint: '/exam_topic',
+    method: 'GET'
+  });
+
+  // Transform API data to a more usable format
+  const transformedData = rawData ? transformAvailableExamsData(rawData) : null;
+
+  return {
+    data: transformedData,
+    loading,
+    error,
+    refetch
+  };
+}
+
+// Helper function to transform available exams data
+function transformAvailableExamsData(apiData: any): AvailableExam[] {
+  console.log('Raw available exams API data:', JSON.stringify(apiData, null, 2));
+  
+  if (!apiData || typeof apiData !== 'object') {
+    console.log('Invalid API data format');
+    return [];
+  }
+
+  const examTopics: AvailableExam[] = [];
+
+  Object.entries(apiData).forEach(([topicKey, difficulties]: [string, any]) => {
+    if (typeof difficulties === 'object' && difficulties !== null) {
+      const mediumCount = difficulties.medium || 0;
+      const hardCount = difficulties.hard || 0;
+      const pyqCount = difficulties.pyq || 0;
+
+      examTopics.push({
+        id: topicKey,
+        title: topicKey.charAt(0).toUpperCase() + topicKey.slice(1),
+        subtopicId: topicKey,
+        mediumQuestions: mediumCount,
+        hardQuestions: hardCount,
+        pyqQuestions: pyqCount,
+        totalQuestions: mediumCount + hardCount + pyqCount
+      });
+    }
+  });
+
+  return examTopics;
 }

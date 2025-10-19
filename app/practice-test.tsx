@@ -1,6 +1,6 @@
 import { MCQCard } from '@/components/MCQCard';
 import { TestTimer } from '@/components/TestTimer';
-import { useExamQuestions } from '@/hooks/useApiData';
+import { useAvailableTestQuestions, useExamQuestions } from '@/hooks/useApiData';
 import { TestAnswer } from '@/types/test';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react-native';
@@ -15,13 +15,36 @@ interface QuestionFeedback {
 
 export default function PracticeTest() {
   const params = useLocalSearchParams();
-  const { testTitle, duration, difficulty, subtopicId  } = params;
+  const { testTitle, duration, difficulty, subtopicId, testId } = params;
   
-  // Fetch questions from API with difficulty parameter
-  const { data: questions, loading: questionsLoading, error: questionsError } = useExamQuestions(
+  // Determine which API to use based on whether testId is present
+  // testId is only passed from tests.tsx (available tests page)
+  const isAvailableTest = !!testId;
+  
+  // Fetch questions from appropriate API
+  // For available tests (from tests.tsx), use /exam_topic_questions endpoint
+  const { 
+    data: availableTestQuestions, 
+    loading: availableTestLoading, 
+    error: availableTestError 
+  } = useAvailableTestQuestions(
     subtopicId as string,
-    difficulty as 'medium' | 'hard' | 'pyq' | undefined
+    isAvailableTest ? (difficulty as 'medium' | 'hard' | 'pyq' | undefined) : undefined
   );
+  
+  // For topic-based tests (from topic-justify), use /exam endpoint (no difficulty filter)
+  const { 
+    data: topicQuestions, 
+    loading: topicQuestionsLoading, 
+    error: topicQuestionsError 
+  } = useExamQuestions(
+    !isAvailableTest ? (subtopicId as string) : ''
+  );
+  
+  // Use the appropriate data based on test source
+  const questions = isAvailableTest ? availableTestQuestions : topicQuestions;
+  const questionsLoading = isAvailableTest ? availableTestLoading : topicQuestionsLoading;
+  const questionsError = isAvailableTest ? availableTestError : topicQuestionsError;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<TestAnswer[]>([]);
@@ -47,7 +70,7 @@ export default function PracticeTest() {
       feedback: null
     }));
     setFeedback(initialFeedback);
-  }, [questions]);
+  }, [questions, subtopicId]);
 
   const handleAnswerSelect = (answerIndex: number) => {
     const question = questions?.[currentQuestion];
@@ -124,7 +147,9 @@ export default function PracticeTest() {
                 testTitle: testTitle as string,
                 answersData: JSON.stringify(answers),
                 feedbackData: JSON.stringify(feedback),
-                subtopicId: subtopicId as string
+                subtopicId: subtopicId as string,
+                difficulty: difficulty as string || '', // Pass difficulty for re-fetching
+                testId: testId as string || '', // Pass testId to identify source
               }
             });
           }
@@ -142,6 +167,7 @@ export default function PracticeTest() {
   };
 
   const currentAnswer = answers.find(a => a.questionId === questions?.[currentQuestion]?.id);
+  const currentQuestionFeedback = feedback.find(f => f.questionId === questions?.[currentQuestion]?.id);
   console.log('Current answer state:', { 
     questionId: questions?.[currentQuestion]?.id,
     currentAnswer,
@@ -252,6 +278,7 @@ export default function PracticeTest() {
             totalQuestions={questions.length}
             onFeedback={handleFeedback}
             questionId={questions[currentQuestion].id}
+            currentFeedback={currentQuestionFeedback?.feedback || null}
           />
         )}
       </ScrollView>

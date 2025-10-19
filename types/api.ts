@@ -29,6 +29,16 @@ export interface ChartDataPoint {
   value: number;
 }
 
+export interface AvailableExam {
+  id: string;
+  title: string;
+  subtopicId: string;
+  mediumQuestions: number;
+  hardQuestions: number;
+  pyqQuestions: number;
+  totalQuestions: number;
+}
+
 export interface ChartData {
   labels: string[];
   datasets: {

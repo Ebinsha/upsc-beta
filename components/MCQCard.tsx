@@ -1,5 +1,5 @@
 import { CircleCheck as CheckCircle, Circle, Clock, ThumbsDown, ThumbsUp } from 'lucide-react-native';
-
+import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface MCQCardProps {
@@ -16,6 +16,7 @@ interface MCQCardProps {
   totalQuestions: number;
   onFeedback?: (type: 'positive' | 'negative') => void;
   questionId?: string;
+  currentFeedback?: 'positive' | 'negative' | null;
 }
 
 export function MCQCard({
@@ -32,7 +33,10 @@ export function MCQCard({
   totalQuestions,
   onFeedback,
   questionId,
+  currentFeedback = null,
 }: MCQCardProps) {
+  const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(currentFeedback);
+
   const isSelected = (index: number) => {
     return selectedAnswer !== null && selectedAnswer === index;
   };
@@ -88,11 +92,12 @@ export function MCQCard({
 
   const handleFeedback = (type: 'positive' | 'negative') => {
     console.log(`Feedback ${type} for question ${questionNumber}`);
+    const newFeedback = feedback === type ? null : type; // Toggle off if clicking same button
+    setFeedback(newFeedback);
     if (onFeedback) {
-      onFeedback(type);
+      onFeedback(newFeedback || type);
     }
   };
-
 
   return (
     <View className="bg-white rounded-2xl p-6 shadow-sm">
@@ -162,16 +167,20 @@ export function MCQCard({
         <Text className="text-sm text-slate-500">Was this helpful?</Text>
         <View className="flex-row gap-3">
           <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-green-100 items-center justify-center"
+            className={`w-10 h-10 rounded-full items-center justify-center ${
+              feedback === 'positive' ? 'bg-green-500' : 'bg-green-100'
+            }`}
             onPress={() => handleFeedback('positive')}
           >
-            <ThumbsUp size={18} color="#10b981" />
+            <ThumbsUp size={18} color={feedback === 'positive' ? '#ffffff' : '#10b981'} />
           </TouchableOpacity>
           <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-red-100 items-center justify-center"
+            className={`w-10 h-10 rounded-full items-center justify-center ${
+              feedback === 'negative' ? 'bg-red-500' : 'bg-red-100'
+            }`}
             onPress={() => handleFeedback('negative')}
           >
-            <ThumbsDown size={18} color="#ef4444" />
+            <ThumbsDown size={18} color={feedback === 'negative' ? '#ffffff' : '#ef4444'} />
           </TouchableOpacity>
         </View>
       </View>
