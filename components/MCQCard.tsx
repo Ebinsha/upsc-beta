@@ -86,7 +86,7 @@ export function MCQCard({
     return <Circle size={20} color="#94a3b8" />;
   };
 
-  const handleFeedback = (type: 'up' | 'down') => {
+  const handleFeedback = (type: 'positive' | 'negative') => {
     console.log(`Feedback ${type} for question ${questionNumber}`);
     if (onFeedback) {
       onFeedback(type);
@@ -163,13 +163,13 @@ export function MCQCard({
         <View className="flex-row gap-3">
           <TouchableOpacity
             className="w-10 h-10 rounded-full bg-green-100 items-center justify-center"
-            onPress={() => handleFeedback('up')}
+            onPress={() => handleFeedback('positive')}
           >
             <ThumbsUp size={18} color="#10b981" />
           </TouchableOpacity>
           <TouchableOpacity
             className="w-10 h-10 rounded-full bg-red-100 items-center justify-center"
-            onPress={() => handleFeedback('down')}
+            onPress={() => handleFeedback('negative')}
           >
             <ThumbsDown size={18} color="#ef4444" />
           </TouchableOpacity>
