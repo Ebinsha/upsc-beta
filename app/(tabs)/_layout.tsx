@@ -1,12 +1,12 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, BookOpen, FileText, User } from 'lucide-react-native';
 // import '@/app/globals.css'
 
 
 export default function TabLayout() {
-
+const insets = useSafeAreaInsets();
   return (
     <Tabs
        screenOptions={{
@@ -15,8 +15,8 @@ export default function TabLayout() {
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#f3f4f6',
-          height: 80,
-          paddingBottom: 20,
+          height: 80 + insets.bottom,
+          paddingBottom: insets.bottom + 20,
           paddingTop: 10,
         },
         tabBarActiveTintColor: '#3b82f6',
