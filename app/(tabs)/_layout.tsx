@@ -16,7 +16,7 @@ const insets = useSafeAreaInsets();
           borderTopWidth: 1,
           borderTopColor: '#f3f4f6',
           height: 80 + insets.bottom,
-          paddingBottom: insets.bottom + 20,
+          paddingBottom: insets.bottom + 10,
           paddingTop: 10,
         },
         tabBarActiveTintColor: '#3b82f6',
