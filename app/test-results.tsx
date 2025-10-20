@@ -228,51 +228,55 @@ export default function TestResults() {
                 />
                 
                 {/* Explanation */}
-                <View className="bg-blue-50 rounded-2xl p-5 mt-3">
-                  <Text className="text-base font-semibold text-blue-800 mb-2">
-                    Explanation
-                  </Text>
-                  <Text className="text-sm text-blue-700 leading-5 mb-3">
-                    {question.explanation}
-                  </Text>
-                  
-                  {/* <Text className="text-sm font-semibold text-blue-800 mb-2">
-                    Why this question matters:
-                  </Text>
-                  <Text className="text-sm text-blue-700 leading-5">
-                    {question.context}
-                  </Text> */}
-                </View>
+                {question.explanation && (
+                  <View className="bg-blue-50 rounded-2xl p-5 mt-3">
+                    <Text className="text-base font-semibold text-blue-800 mb-2">
+                      Explanation
+                    </Text>
+                    <Text className="text-sm text-blue-700 leading-5 mb-3">
+                      {question.explanation}
+                    </Text>
+                    
+                    {/* <Text className="text-sm font-semibold text-blue-800 mb-2">
+                      Why this question matters:
+                    </Text>
+                    <Text className="text-sm text-blue-700 leading-5">
+                      {question.context}
+                    </Text> */}
+                  </View>
+                )}
                 
                 {/* References */}
-                <View className="bg-slate-50 rounded-2xl p-5 mt-3">
-                  <Text className="text-base font-semibold text-slate-800 mb-3">
-                    📚 Further Reading
-                  </Text>
-                  
-                  {question.references.map((ref, refIndex) => (
-                    <TouchableOpacity
-                      key={refIndex}
-                      className="flex-row items-center justify-between p-3 bg-white rounded-xl mb-2"
-                    >
-                      <View className="flex-1">
-                        <Text className="text-sm font-semibold text-slate-800 mb-1">
-                          {ref.title}
-                        </Text>
-                        { ref.type && 
-                        <Text className="text-xs text-slate-500 mb-1">
-                          {ref.type}
-                        </Text>}
-                        <Text className="text-xs text-slate-600 leading-4">
-                          {ref.description}
-                        </Text>
-                      </View>
-                      {ref.url && (
-                        <ExternalLink size={16} color="#64748b" />
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
+                {question.references && question.references.length > 0 && (
+                  <View className="bg-slate-50 rounded-2xl p-5 mt-3">
+                    <Text className="text-base font-semibold text-slate-800 mb-3">
+                      📚 Further Reading
+                    </Text>
+                    
+                    {question.references.map((ref, refIndex) => (
+                      <TouchableOpacity
+                        key={refIndex}
+                        className="flex-row items-center justify-between p-3 bg-white rounded-xl mb-2"
+                      >
+                        <View className="flex-1">
+                          <Text className="text-sm font-semibold text-slate-800 mb-1">
+                            {ref.title}
+                          </Text>
+                          { ref.type && 
+                          <Text className="text-xs text-slate-500 mb-1">
+                            {ref.type}
+                          </Text>}
+                          <Text className="text-xs text-slate-600 leading-4">
+                            {ref.description}
+                          </Text>
+                        </View>
+                        {ref.url && (
+                          <ExternalLink size={16} color="#64748b" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
             );
           })}

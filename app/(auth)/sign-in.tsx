@@ -1,7 +1,7 @@
 import * as AuthSession from 'expo-auth-session';
 import { Link, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { Brain, Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -100,8 +100,12 @@ export default function SignIn() {
         <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View className="items-center mt-12 mb-8">
-            <View className="w-20 h-20 bg-blue-500 rounded-full items-center justify-center mb-4 shadow-lg">
-              <Brain size={32} color="white" />
+            <View className="w-32 h-32 items-center justify-center mb-4">
+              <Image 
+                source={require('../../assets/images/logo-white.png')} 
+                style={{ width: 128, height: 128 }} 
+                resizeMode="contain"
+              />
             </View>
             <Text className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</Text>
             <Text className="text-gray-600 text-center">
