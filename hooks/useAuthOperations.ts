@@ -16,9 +16,9 @@ export function useAuthOperations() {
     setIsLoading(true);
     try {
       await signIn(email, password);
-      Alert.alert('Success', 'Signed in successfully!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
-      ]);
+      // No alert needed - the auth context will handle the redirect
+      console.log('Sign in successful, redirecting...');
+      router.replace('/(tabs)');
     } catch (error: any) {
       console.error('Sign in error:', error);
       Alert.alert(

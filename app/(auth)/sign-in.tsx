@@ -1,5 +1,5 @@
 import * as AuthSession from 'expo-auth-session';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { Brain, Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
@@ -27,16 +27,19 @@ export default function SignIn() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
-  const { session, user } = useAuth();
+  const { session, user, loading } = useAuth();
   const { handleSignIn, isLoading } = useAuthOperations();
+  const router = useRouter();
 
-  // Log session whenever it changes
+  // Check for existing session and redirect to dashboard
   useEffect(() => {
-    console.log('=== Sign In Page Session Update ===');
-    console.log('Session:', session);
-    console.log('User:', user);
-    console.log('=================================');
-  }, [session, user]);
+    if (!loading && session && user) {
+      console.log('=== Active session found on sign-in page ===');
+      console.log('User:', user.email);
+      console.log('Redirecting to dashboard...');
+      router.replace('/(tabs)');
+    }
+  }, [session, user, loading, router]);
 
   const handleEmailSignIn = async () => {
     await handleSignIn(email, password);
@@ -49,7 +52,7 @@ export default function SignIn() {
       
       // Create the redirect URI for your app
       const redirectTo = AuthSession.makeRedirectUri({
-        scheme: 'upscbeta', // Your app scheme from app.json
+        scheme: 'graspai', // Your app scheme from app.json
         path: 'auth/callback'
       });
 

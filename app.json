@@ -1,11 +1,12 @@
 {
   "expo": {
-    "name": "upsc-beta",
-    "slug": "upsc-beta",
+    "name": "GraspAI",
+    "slug": "graspai",
+    "description": "GraspAI is a smart learning app for UPSC aspirants that uses AI to analyze current affairs and predict high-probability topics and future question patterns.",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "upscbeta",
+    "scheme": "graspai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
