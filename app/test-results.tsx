@@ -247,7 +247,7 @@ export default function TestResults() {
                 )}
                 
                 {/* References */}
-                {question.references && question.references.length > 0 && (
+                {/* {question.references && question.references.length > 0 && (
                   <View className="bg-slate-50 rounded-2xl p-5 mt-3">
                     <Text className="text-base font-semibold text-slate-800 mb-3">
                       📚 Further Reading
@@ -276,7 +276,7 @@ export default function TestResults() {
                       </TouchableOpacity>
                     ))}
                   </View>
-                )}
+                )} */}
               </View>
             );
           })}
