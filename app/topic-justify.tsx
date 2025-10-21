@@ -371,7 +371,7 @@ export default function TopicJustify() {
                   <View key={index} className="flex-row items-start">
                     <Text className="text-slate-600 mr-2">•</Text>
                     <Text className="text-sm text-slate-600 flex-1">
-                      {relative}
+                    {relative}
                     </Text>
                   </View>
                 ))}

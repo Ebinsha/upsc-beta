@@ -15,7 +15,7 @@ const insets = useSafeAreaInsets();
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#f3f4f6',
-          height: 50 + insets.bottom,
+          height: 55 + insets.bottom,
           paddingBottom:10,
           paddingTop: 10,
         },
