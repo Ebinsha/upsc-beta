@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface QuestionFeedback {
   topicId: string;
@@ -14,6 +15,7 @@ interface QuestionFeedback {
 }
 
 export default function PracticeTest() {
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const { testTitle, duration, difficulty, subtopicId, testId } = params;
   
@@ -284,7 +286,10 @@ export default function PracticeTest() {
       </ScrollView>
 
       {/* Navigation */}
-      <View className="bg-white px-5 py-4 border-t border-slate-200">
+      <View 
+        className="bg-white px-5 py-4 border-t border-slate-200"
+        style={{ paddingBottom: Math.max(16, insets.bottom) }}
+      >
         <View className="flex-row justify-between items-center">
           <TouchableOpacity
             onPress={handlePreviousQuestion}
