@@ -114,8 +114,8 @@ export default function TestResults() {
   const timeNum = parseInt(timeTaken as string);
   
   const percentage = Math.round((scoreNum / totalNum) * 100);
-  const correctAnswers = answers.filter(a => a.isCorrect).length;
-  const incorrectAnswers = totalNum - correctAnswers;
+  // const correctAnswers = answers.filter(a => a.isCorrect).length;
+  const incorrectAnswers = totalNum - scoreNum;
   
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -180,7 +180,7 @@ export default function TestResults() {
               <View className="w-12 h-12 rounded-full bg-green-100 items-center justify-center mb-2">
                 <CheckCircle size={24} color="#10b981" />
               </View>
-              <Text className="text-xl font-bold text-slate-800">{correctAnswers}</Text>
+              <Text className="text-xl font-bold text-slate-800">{scoreNum}</Text>
               <Text className="text-sm text-slate-500">Correct</Text>
             </View>
             
