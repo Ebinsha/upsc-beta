@@ -29,9 +29,18 @@ export default function SignIn() {
 
   // Configure Google Sign-In
   useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID, // From your Google Cloud Console
-    });
+    const configureGoogleSignIn = async () => {
+      try {
+        await GoogleSignin.configure({
+          webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID, // From your Google Cloud Console
+        });
+        console.log('Google Sign-In configured successfully');
+      } catch (error) {
+        console.error('Error configuring Google Sign-In:', error);
+      }
+    };
+    
+    configureGoogleSignIn();
   }, []);
 
   // Check for existing session and redirect to dashboard
@@ -51,6 +60,11 @@ export default function SignIn() {
   const handleGoogleSignIn = async () => {
     try {
       console.log('Starting Google Sign-In...');
+      
+      // Check if GoogleSignin is available
+      if (!GoogleSignin) {
+        throw new Error('Google Sign-In module not found. Make sure to use a development build, not Expo Go.');
+      }
       
       // Check if device supports Google Play Services
       await GoogleSignin.hasPlayServices();
