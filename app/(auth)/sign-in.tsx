@@ -62,8 +62,22 @@ export default function SignIn() {
       console.log('Starting Google Sign-In...');
       
       // Check if GoogleSignin is available
-      if (!GoogleSignin) {
-        throw new Error('Google Sign-In module not found. Make sure to use a development build, not Expo Go.');
+      if (!GoogleSignin || typeof GoogleSignin.configure !== 'function') {
+        console.log('Native Google Sign-In not available, falling back to OAuth');
+        // Fallback to Supabase OAuth
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: 'graspai://auth/callback',
+          },
+        });
+        
+        if (error) {
+          throw error;
+        }
+        
+        console.log('OAuth initiated, check for session updates');
+        return;
       }
       
       // Check if device supports Google Play Services
@@ -111,7 +125,7 @@ export default function SignIn() {
             Alert.alert('Error', `Google sign in failed: ${error.message}`);
         }
       } else {
-        Alert.alert('Error', error.message || 'Google sign in failed');
+        Alert.alert('Error', error.message || 'Google sign in failed. Note: This requires a development build with native modules.');
       }
     }
   };

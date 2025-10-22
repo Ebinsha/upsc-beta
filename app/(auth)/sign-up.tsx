@@ -61,6 +61,25 @@ export default function SignUp() {
     try {
       console.log('Starting Google Sign-Up...');
       
+      // Check if GoogleSignin is available
+      if (!GoogleSignin || typeof GoogleSignin.configure !== 'function') {
+        console.log('Native Google Sign-In not available, falling back to OAuth');
+        // Fallback to Supabase OAuth
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: 'graspai://auth/callback',
+          },
+        });
+        
+        if (error) {
+          throw error;
+        }
+        
+        console.log('OAuth initiated, check for session updates');
+        return;
+      }
+      
       // Configure Google Sign-In if not already configured
       GoogleSignin.configure({
         webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
