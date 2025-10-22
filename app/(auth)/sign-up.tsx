@@ -1,4 +1,3 @@
-import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { Link } from 'expo-router';
 import { Brain, Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
@@ -59,84 +58,23 @@ export default function SignUp() {
 
   const handleGoogleSignUp = async () => {
     try {
-      console.log('Starting Google Sign-Up...');
+      console.log('Starting Google OAuth sign up...');
       
-      // Check if GoogleSignin is available
-      if (!GoogleSignin || typeof GoogleSignin.configure !== 'function') {
-        console.log('Native Google Sign-In not available, falling back to OAuth');
-        // Fallback to Supabase OAuth
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: 'graspai://auth/callback',
-          },
-        });
-        
-        if (error) {
-          throw error;
-        }
-        
-        console.log('OAuth initiated, check for session updates');
-        return;
-      }
-      
-      // Configure Google Sign-In if not already configured
-      GoogleSignin.configure({
-        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'graspai://auth/callback',
+        },
       });
       
-      // Check if device supports Google Play Services
-      await GoogleSignin.hasPlayServices();
-      
-      // Sign in with Google
-      const userInfo = await GoogleSignin.signIn();
-      console.log('Google Sign-Up successful:', userInfo.data?.user);
-
-      // Check if we have the ID token
-      if (userInfo.data?.idToken) {
-        console.log('ID Token received, signing up with Supabase...');
-        
-        // Sign in to Supabase with the Google ID token (this handles both sign-in and sign-up)
-        const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: 'google',
-          token: userInfo.data.idToken,
-        });
-
-        if (error) {
-          console.error('Supabase auth error:', error);
-          throw error;
-        }
-
-        console.log('Supabase auth successful:', data.user?.email);
-        Alert.alert(
-          'Success',
-          'Account created successfully! Welcome!',
-          [{ text: 'OK', onPress: () => {} }]
-        );
-        // Navigation will be handled by AuthContext
-      } else {
-        throw new Error('No ID token received from Google');
+      if (error) {
+        throw error;
       }
+      
+      console.log('Google OAuth initiated successfully');
     } catch (error: any) {
       console.error('Google sign up error:', error);
-      
-      if (isErrorWithCode(error)) {
-        switch (error.code) {
-          case statusCodes.SIGN_IN_CANCELLED:
-            console.log('User cancelled Google sign up');
-            break;
-          case statusCodes.IN_PROGRESS:
-            Alert.alert('Error', 'Google sign up is already in progress');
-            break;
-          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            Alert.alert('Error', 'Google Play Services not available or outdated');
-            break;
-          default:
-            Alert.alert('Error', `Google sign up failed: ${error.message}`);
-        }
-      } else {
-        Alert.alert('Error', error.message || 'Google sign up failed');
-      }
+      Alert.alert('Error', error.message || 'Google sign up failed');
     }
   };
 
