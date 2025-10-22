@@ -1,6 +1,5 @@
-import * as AuthSession from 'expo-auth-session';
+import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { Link, useRouter } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -19,9 +18,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useAuthOperations } from '../../hooks/useAuthOperations';
 import { supabase } from '../../lib/supabase';
 
-// Warm up the browser for faster OAuth
-WebBrowser.maybeCompleteAuthSession();
-
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,6 +26,13 @@ export default function SignIn() {
   const { session, user, loading } = useAuth();
   const { handleSignIn, isLoading } = useAuthOperations();
   const router = useRouter();
+
+  // Configure Google Sign-In
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID, // From your Google Cloud Console
+    });
+  }, []);
 
   // Check for existing session and redirect to dashboard
   useEffect(() => {
@@ -47,47 +50,55 @@ export default function SignIn() {
 
   const handleGoogleSignIn = async () => {
     try {
-      // Dismiss any previous browser session to avoid state conflicts
-      WebBrowser.dismissBrowser();
+      console.log('Starting Google Sign-In...');
       
-      // Create the redirect URI for your app
-      const redirectTo = AuthSession.makeRedirectUri({
-        scheme: 'graspai', // Your app scheme from app.json
-        path: 'auth/callback'
-      });
+      // Check if device supports Google Play Services
+      await GoogleSignin.hasPlayServices();
+      
+      // Sign in with Google
+      const userInfo = await GoogleSignin.signIn();
+      console.log('Google Sign-In successful:', userInfo.data?.user);
 
-      console.log('Redirect URI:', redirectTo);
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo,
-          skipBrowserRedirect: true, // We'll handle the redirect ourselves
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      // Open the OAuth URL in browser
-      if (data?.url) {
-        const result = await WebBrowser.openAuthSessionAsync(
-          data.url, 
-          redirectTo
-        );
+      // Check if we have the ID token
+      if (userInfo.data?.idToken) {
+        console.log('ID Token received, signing in with Supabase...');
         
-        console.log('Browser result:', result);
-        
-        if (result.type === 'success') {
-          console.log('OAuth success, should redirect to callback');
+        // Sign in to Supabase with the Google ID token
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: userInfo.data.idToken,
+        });
+
+        if (error) {
+          console.error('Supabase auth error:', error);
+          throw error;
         }
-      }
 
-      console.log('Google OAuth initiated');
+        console.log('Supabase auth successful:', data.user?.email);
+        router.replace('/(tabs)');
+      } else {
+        throw new Error('No ID token received from Google');
+      }
     } catch (error: any) {
       console.error('Google sign in error:', error);
-      Alert.alert('Error', error.message || 'Google sign in failed. Note: OAuth does not work in Expo Go. Please use a development build.');
+      
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.SIGN_IN_CANCELLED:
+            console.log('User cancelled Google sign in');
+            break;
+          case statusCodes.IN_PROGRESS:
+            Alert.alert('Error', 'Google sign in is already in progress');
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            Alert.alert('Error', 'Google Play Services not available or outdated');
+            break;
+          default:
+            Alert.alert('Error', `Google sign in failed: ${error.message}`);
+        }
+      } else {
+        Alert.alert('Error', error.message || 'Google sign in failed');
+      }
     }
   };
 

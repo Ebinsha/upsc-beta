@@ -1,6 +1,5 @@
-import * as AuthSession from 'expo-auth-session';
+import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { Link } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { Brain, Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -18,9 +17,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAuthOperations } from '../../hooks/useAuthOperations';
 import { supabase } from '../../lib/supabase';
-
-// Warm up the browser for faster OAuth
-WebBrowser.maybeCompleteAuthSession();
 
 export default function SignUp() {
   const [fullName, setFullName] = useState('');
@@ -63,47 +59,65 @@ export default function SignUp() {
 
   const handleGoogleSignUp = async () => {
     try {
-      // Dismiss any previous browser session to avoid state conflicts
-      WebBrowser.dismissBrowser();
+      console.log('Starting Google Sign-Up...');
       
-      // Create the redirect URI for your app
-      const redirectTo = AuthSession.makeRedirectUri({
-        scheme: 'upscbeta', // Your app scheme from app.json
-        path: 'auth/callback'
+      // Configure Google Sign-In if not already configured
+      GoogleSignin.configure({
+        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
       });
+      
+      // Check if device supports Google Play Services
+      await GoogleSignin.hasPlayServices();
+      
+      // Sign in with Google
+      const userInfo = await GoogleSignin.signIn();
+      console.log('Google Sign-Up successful:', userInfo.data?.user);
 
-      console.log('Redirect URI:', redirectTo);
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo,
-          skipBrowserRedirect: true, // We'll handle the redirect ourselves
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      // Open the OAuth URL in browser
-      if (data?.url) {
-        const result = await WebBrowser.openAuthSessionAsync(
-          data.url, 
-          redirectTo
-        );
+      // Check if we have the ID token
+      if (userInfo.data?.idToken) {
+        console.log('ID Token received, signing up with Supabase...');
         
-        console.log('Browser result:', result);
-        
-        if (result.type === 'success') {
-          console.log('OAuth success, should redirect to callback');
+        // Sign in to Supabase with the Google ID token (this handles both sign-in and sign-up)
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: userInfo.data.idToken,
+        });
+
+        if (error) {
+          console.error('Supabase auth error:', error);
+          throw error;
         }
-      }
 
-      console.log('Google OAuth initiated');
+        console.log('Supabase auth successful:', data.user?.email);
+        Alert.alert(
+          'Success',
+          'Account created successfully! Welcome!',
+          [{ text: 'OK', onPress: () => {} }]
+        );
+        // Navigation will be handled by AuthContext
+      } else {
+        throw new Error('No ID token received from Google');
+      }
     } catch (error: any) {
       console.error('Google sign up error:', error);
-      Alert.alert('Error', error.message || 'Google sign up failed. Note: OAuth does not work in Expo Go. Please use a development build.');
+      
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.SIGN_IN_CANCELLED:
+            console.log('User cancelled Google sign up');
+            break;
+          case statusCodes.IN_PROGRESS:
+            Alert.alert('Error', 'Google sign up is already in progress');
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            Alert.alert('Error', 'Google Play Services not available or outdated');
+            break;
+          default:
+            Alert.alert('Error', `Google sign up failed: ${error.message}`);
+        }
+      } else {
+        Alert.alert('Error', error.message || 'Google sign up failed');
+      }
     }
   };
 
