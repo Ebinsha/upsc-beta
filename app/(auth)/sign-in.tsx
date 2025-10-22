@@ -1,4 +1,3 @@
-import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { Link, useRouter } from 'expo-router';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
@@ -27,21 +26,7 @@ export default function SignIn() {
   const { handleSignIn, isLoading } = useAuthOperations();
   const router = useRouter();
 
-  // Configure Google Sign-In
-  useEffect(() => {
-    const configureGoogleSignIn = async () => {
-      try {
-        await GoogleSignin.configure({
-          webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID, // From your Google Cloud Console
-        });
-        console.log('Google Sign-In configured successfully');
-      } catch (error) {
-        console.error('Error configuring Google Sign-In:', error);
-      }
-    };
-    
-    configureGoogleSignIn();
-  }, []);
+
 
   // Check for existing session and redirect to dashboard
   useEffect(() => {
@@ -59,74 +44,23 @@ export default function SignIn() {
 
   const handleGoogleSignIn = async () => {
     try {
-      console.log('Starting Google Sign-In...');
+      console.log('Starting Google OAuth...');
       
-      // Check if GoogleSignin is available
-      if (!GoogleSignin || typeof GoogleSignin.configure !== 'function') {
-        console.log('Native Google Sign-In not available, falling back to OAuth');
-        // Fallback to Supabase OAuth
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: 'graspai://auth/callback',
-          },
-        });
-        
-        if (error) {
-          throw error;
-        }
-        
-        console.log('OAuth initiated, check for session updates');
-        return;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'graspai://auth/callback',
+        },
+      });
+      
+      if (error) {
+        throw error;
       }
       
-      // Check if device supports Google Play Services
-      await GoogleSignin.hasPlayServices();
-      
-      // Sign in with Google
-      const userInfo = await GoogleSignin.signIn();
-      console.log('Google Sign-In successful:', userInfo.data?.user);
-
-      // Check if we have the ID token
-      if (userInfo.data?.idToken) {
-        console.log('ID Token received, signing in with Supabase...');
-        
-        // Sign in to Supabase with the Google ID token
-        const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: 'google',
-          token: userInfo.data.idToken,
-        });
-
-        if (error) {
-          console.error('Supabase auth error:', error);
-          throw error;
-        }
-
-        console.log('Supabase auth successful:', data.user?.email);
-        router.replace('/(tabs)');
-      } else {
-        throw new Error('No ID token received from Google');
-      }
+      console.log('Google OAuth initiated successfully');
     } catch (error: any) {
       console.error('Google sign in error:', error);
-      
-      if (isErrorWithCode(error)) {
-        switch (error.code) {
-          case statusCodes.SIGN_IN_CANCELLED:
-            console.log('User cancelled Google sign in');
-            break;
-          case statusCodes.IN_PROGRESS:
-            Alert.alert('Error', 'Google sign in is already in progress');
-            break;
-          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            Alert.alert('Error', 'Google Play Services not available or outdated');
-            break;
-          default:
-            Alert.alert('Error', `Google sign in failed: ${error.message}`);
-        }
-      } else {
-        Alert.alert('Error', error.message || 'Google sign in failed. Note: This requires a development build with native modules.');
-      }
+      Alert.alert('Error', error.message || 'Google sign in failed');
     }
   };
 
