@@ -14,6 +14,10 @@ function RootLayoutNav() {
   useEffect(() => {
     if (loading) return;
 
+    // Check if we're on the OAuth callback route (always public)
+    const isOnCallback = segments[0] === 'auth' && segments[1] === 'callback';
+    if (isOnCallback) return;
+
     const inAuthGroup = segments[0] === '(auth)';
 
     if (!user && !inAuthGroup) {
@@ -29,6 +33,9 @@ function RootLayoutNav() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      {/* OAuth callback - always accessible */}
+      <Stack.Screen name="auth/callback" options={{ headerShown: false }} />
+      
       {/* Auth routes - accessible when NOT logged in */}
       <Stack.Protected guard={!isLoggedIn}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />

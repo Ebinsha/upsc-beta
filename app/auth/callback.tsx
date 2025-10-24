@@ -9,67 +9,25 @@ export default function AuthCallback() {
   const hasProcessed = useRef(false);
 
   useEffect(() => {
-    // Prevent double processing
     if (hasProcessed.current) return;
+    hasProcessed.current = true;
     
     const handleCallback = async () => {
       try {
         console.log('=== Auth Callback Started ===');
-        console.log('Callback params:', params);
         
-        // Extract the URL if it's coming from OAuth redirect
-        const url = (params.url as string) || '';
-        console.log('URL param:', url);
+        // Wait a moment for Supabase to detect the session from URL
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Parse the URL to extract tokens
-        let accessToken = params.access_token as string;
-        let refreshToken = params.refresh_token as string;
+        // Check if session was automatically detected
+        const { data: { session } } = await supabase.auth.getSession();
         
-        // If tokens are in the URL string, extract them
-        if (url && !accessToken) {
-          const urlParams = new URLSearchParams(url.split('#')[1] || url.split('?')[1] || '');
-          accessToken = urlParams.get('access_token') || '';
-          refreshToken = urlParams.get('refresh_token') || '';
-        }
-        
-        console.log('Access token found:', !!accessToken);
-        console.log('Refresh token found:', !!refreshToken);
-        
-        if (accessToken && refreshToken) {
-          hasProcessed.current = true;
-          
-          // Set the session with the tokens
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-
-          if (error) {
-            console.error('Error setting session:', error);
-            router.replace('/(auth)/sign-in');
-            return;
-          }
-
-          console.log('Session set successfully');
-          console.log('User:', data.user?.email);
-          
-          // Wait a bit for the session to be fully established
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          // Navigate to dashboard
+        if (session) {
+          console.log('Session found, user:', session.user?.email);
           router.replace('/(tabs)');
         } else {
-          // No tokens found, check if we already have a session
-          console.log('No tokens in callback, checking existing session...');
-          const { data: { session } } = await supabase.auth.getSession();
-          
-          if (session) {
-            console.log('Existing session found, redirecting to dashboard');
-            router.replace('/(tabs)');
-          } else {
-            console.log('No session found, redirecting to sign in');
-            router.replace('/(auth)/sign-in');
-          }
+          console.log('No session found, redirecting to sign in');
+          router.replace('/(auth)/sign-in');
         }
         
         console.log('=== Auth Callback Complete ===');

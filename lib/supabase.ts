@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
+import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
 import 'react-native-url-polyfill/auto';
 
@@ -16,10 +17,21 @@ export const getSupabase = () => {
         storage: AsyncStorage,
         autoRefreshToken: true,
         persistSession: true,
-        detectSessionInUrl: Platform.OS === 'web', // Only detect on web
-        flowType: 'pkce', // Use PKCE flow for better security
+        detectSessionInUrl: true,
+        flowType: 'implicit',
       },
     });
+
+    // Handle OAuth completion for native platforms
+    if (Platform.OS !== 'web') {
+      supabaseInstance.auth.onAuthStateChange(async (event, session) => {
+        console.log('[Auth Event]', event, '| Session:', !!session);
+        
+        if (event === 'SIGNED_OUT') {
+          WebBrowser.dismissBrowser().catch(() => {});
+        }
+      });
+    }
   }
   return supabaseInstance;
 };
@@ -31,3 +43,5 @@ export const supabase = new Proxy({} as SupabaseClient, {
     return client[prop as keyof SupabaseClient];
   },
 });
+
+

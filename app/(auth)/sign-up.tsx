@@ -1,21 +1,25 @@
 import { Link } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { Brain, Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAuthOperations } from '../../hooks/useAuthOperations';
 import { supabase } from '../../lib/supabase';
+
+// Warm up the browser for OAuth
+WebBrowser.warmUpAsync().catch(() => {});
 
 export default function SignUp() {
   const [fullName, setFullName] = useState('');
@@ -59,22 +63,33 @@ export default function SignUp() {
   const handleGoogleSignUp = async () => {
     try {
       console.log('Starting Google OAuth sign up...');
+      console.log('Platform:', Platform.OS);
       
-      const { error } = await supabase.auth.signInWithOAuth({
+      // Complete any pending auth sessions
+      await WebBrowser.maybeCompleteAuthSession();
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: 'graspai://auth/callback',
+          skipBrowserRedirect: false,
         },
       });
       
       if (error) {
-        throw error;
+        console.error('OAuth error:', error);
+        Alert.alert('Error', 'Failed to start Google sign-up');
+        return;
       }
       
-      console.log('Google OAuth initiated successfully');
+      // On mobile, open the browser with the OAuth URL
+      if (Platform.OS !== 'web' && data?.url) {
+        console.log('Opening browser...');
+        await WebBrowser.openBrowserAsync(data.url);
+      }
     } catch (error: any) {
       console.error('Google sign up error:', error);
-      Alert.alert('Error', error.message || 'Google sign up failed');
+      Alert.alert('Error', 'Google sign up failed');
     }
   };
 
