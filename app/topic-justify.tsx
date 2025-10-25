@@ -71,9 +71,9 @@ export default function TopicJustify() {
         <View className="bg-white m-5 p-5 rounded-2xl shadow-sm">
           <View className="flex-row justify-between items-center mb-3">
             <View className="flex-1">
-              <Text className="text-lg font-bold text-slate-800 mb-1">Question Frequency Trend</Text>
+              <Text className="text-lg font-bold text-slate-800 mb-1">Emerging Topic Insights</Text>
               <Text className="text-sm text-slate-500">
-                How often this topic appears in exams over time
+                How often this topic has appeared over time
               </Text>
             </View>
             <TouchableOpacity 
@@ -120,7 +120,7 @@ export default function TopicJustify() {
             <View className="flex-row items-center gap-2 mb-1">
               <Calendar size={16} color="#3b82f6" />
               <Text className="text-sm font-semibold text-blue-800">
-                Half Yearly Question Frequency
+                Half Yearly Topic Evolution
               </Text>
             </View>
             <Text className="text-xs text-blue-700">

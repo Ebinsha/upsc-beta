@@ -111,7 +111,7 @@ if (isLoadingOnboard) {
       <View className="bg-white pt-16 px-5 pb-5 border-b border-slate-200">
 
          <Text className="text-3xl font-bold text-slate-800">Smart Study</Text>
-          <Text className="text-base text-slate-500">AI powered topic distribution</Text>
+          <Text className="text-base text-slate-500">AI driven insights on evolving topics</Text>
         {/* <View className="flex-row justify-between items-center mb-5">
          
           <TouchableOpacity>
@@ -165,7 +165,7 @@ if (isLoadingOnboard) {
             />
           }
         >
-          <Text className="text-xl font-bold text-slate-800 mb-5">Trend Based Topic Distribution</Text>
+          <Text className="text-xl font-bold text-slate-800 mb-5">Current Affairs Topic Trends</Text>
           
           {topics && topics.length > 0 ? (
             <View className="gap-6">
