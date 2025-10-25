@@ -1,10 +1,11 @@
 import { Link } from 'expo-router';
-import { Brain, Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
+import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
   Text,
@@ -24,6 +25,7 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   
   const { session, user } = useAuth();
   const { handleSignUp, isLoading } = useAuthOperations();
@@ -39,6 +41,11 @@ export default function SignUp() {
   const handleEmailSignUp = async () => {
     if (!fullName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (!agreedToTerms) {
+      Alert.alert('Error', 'Please agree to our Terms of Service and Privacy Policy');
       return;
     }
 
@@ -87,9 +94,13 @@ export default function SignUp() {
         <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View className="items-center mt-8 mb-8">
-            <View className="w-20 h-20 bg-blue-500 rounded-full items-center justify-center mb-4 shadow-lg">
-              <Brain size={32} color="white" />
-            </View>
+            <View className="w-32 h-32 items-center justify-center mb-4">
+                  <Image 
+                            source={require('../../assets/images/logo-white.png')} 
+                            style={{ width: 128, height: 128 }} 
+                            resizeMode="contain"
+                    />
+              </View>
             <Text className="text-3xl font-bold text-gray-800 mb-2">Create Account</Text>
             <Text className="text-gray-600 text-center">
               Join SmartGuru AI and start your AI-powered learning journey
@@ -182,14 +193,31 @@ export default function SignUp() {
           </View>
 
           {/* Terms and Conditions */}
-          <View className="flex-row items-start mb-6">
-            <View className="w-5 h-5 border border-gray-300 rounded mr-3 mt-0.5" />
+          <TouchableOpacity 
+            className="flex-row items-start mb-6"
+            onPress={() => setAgreedToTerms(!agreedToTerms)}
+            activeOpacity={0.7}
+          >
+            <View className={`w-5 h-5 border-2 rounded mr-3 mt-0.5 items-center justify-center ${agreedToTerms ? 'bg-blue-500 border-blue-500' : 'border-gray-300'}`}>
+              {agreedToTerms && <Text className="text-white font-bold text-xs">✓</Text>}
+            </View>
             <Text className="flex-1 text-gray-600 text-sm leading-5">
               By creating an account, you agree to our{' '}
-              <Text className="text-blue-600">Terms of Service</Text> and{' '}
-              <Text className="text-blue-600">Privacy Policy</Text>
+              <Text 
+                className="text-blue-600 font-semibold"
+                onPress={() => Linking.openURL('https://sites.google.com/view/graspai-policy/terms-conditions')}
+              >
+                Terms of Service
+              </Text>
+              {' '}and{' '}
+              <Text 
+                className="text-blue-600 font-semibold"
+                onPress={() => Linking.openURL('https://sites.google.com/view/graspai-policy/privacy-policy')}
+              >
+                Privacy Policy
+              </Text>
             </Text>
-          </View>
+          </TouchableOpacity>
 
           {/* Sign Up Button */}
           <TouchableOpacity
